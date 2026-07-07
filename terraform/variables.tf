@@ -43,3 +43,21 @@ variable "okta_scopes" {
   type        = string
   default     = ""
 }
+
+variable "jira_email" {
+  description = "Atlassian account email for JIRA REST Basic auth (the API token's owner)"
+  type        = string
+  default     = ""
+}
+
+variable "jira_cloud_id" {
+  description = "Atlassian cloud ID of the JIRA site (empty disables the JIRA MCP tools)"
+  type        = string
+  default     = ""
+}
+
+variable "mcp_write_scope" {
+  description = "Okta scope (scp claim entry) required to call write MCP tools; empty disables the gate"
+  type        = string
+  default     = ""
+}

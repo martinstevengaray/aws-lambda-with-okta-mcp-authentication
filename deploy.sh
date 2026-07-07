@@ -20,6 +20,12 @@ export TF_VAR_okta_issuer="https://${OKTA_URL_PREFIX}.okta.com/oauth2/default"
 export TF_VAR_okta_web_client_id="${OKTA_WEB_CLIENT_ID:-}"
 export TF_VAR_okta_scopes="${OKTA_SCOPES:-}"
 
+# JIRA MCP tools: empty JIRA_CLOUDID deploys with the tools disabled. The API
+# token is NOT passed through terraform — ./deploy_secrets.sh pushes it to SSM.
+export TF_VAR_jira_email="${JIRA_EMAIL:-}"
+export TF_VAR_jira_cloud_id="${JIRA_CLOUDID:-}"
+export TF_VAR_mcp_write_scope="${MCP_WRITE_SCOPE:-}"
+
 # Skipped once initialized — if the backend or providers change, delete terraform/.terraform to re-init.
 if [ ! -d terraform/.terraform ]; then
   terraform -chdir=terraform init -backend-config="bucket=tfstate-${AWS_ACCOUNT_ID}" -input=false

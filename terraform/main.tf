@@ -30,6 +30,18 @@ resource "aws_ssm_parameter" "okta_web_client_secret" {
   }
 }
 
+# Same ownership model as the Okta secret: terraform creates the shell, the
+# real Atlassian API token is pushed by ./deploy_secrets.sh.
+resource "aws_ssm_parameter" "jira_api_token" {
+  name  = "/${var.aws_lambda_function_name}/jira-api-token"
+  type  = "SecureString"
+  value = "placeholder - set the real value with aws ssm put-parameter"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 resource "aws_iam_role_policy" "read_web_client_secret" {
   name = "${var.aws_lambda_function_name}-read-web-client-secret"
   role = aws_iam_role.lambda.id
@@ -38,9 +50,12 @@ resource "aws_iam_role_policy" "read_web_client_secret" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = "ssm:GetParameter"
-        Resource = aws_ssm_parameter.okta_web_client_secret.arn
+        Effect = "Allow"
+        Action = "ssm:GetParameter"
+        Resource = [
+          aws_ssm_parameter.okta_web_client_secret.arn,
+          aws_ssm_parameter.jira_api_token.arn,
+        ]
       },
       {
         Effect   = "Allow"
@@ -92,6 +107,10 @@ resource "aws_lambda_function" "this" {
       OKTA_WEB_CLIENT_ID                       = var.okta_web_client_id
       OKTA_WEB_CLIENT_SECRET_SSM_PARAMETER_KEY = aws_ssm_parameter.okta_web_client_secret.name
       OKTA_SCOPES                              = var.okta_scopes
+      JIRA_EMAIL                               = var.jira_email
+      JIRA_CLOUDID                             = var.jira_cloud_id
+      JIRA_API_TOKEN_SSM_PARAMETER_KEY         = aws_ssm_parameter.jira_api_token.name
+      MCP_WRITE_SCOPE                          = var.mcp_write_scope
     }
   }
 }
