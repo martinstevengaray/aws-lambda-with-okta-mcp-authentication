@@ -16,6 +16,8 @@ import java.util.Map;
 public class OktaAppLambda implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
     private static final String MCP_PATH = "/mcp";
+    private static final String WELL_KNOWN_PREFIX = "/.well-known/";
+    private static final String PROTECTED_RESOURCE_METADATA_PATH = "/.well-known/oauth-protected-resource";
 
     private final OktaDelegate oktaDelegate;
     private final McpHandler mcpHandler;
@@ -38,6 +40,9 @@ public class OktaAppLambda implements RequestHandler<Map<String, Object>, Map<St
     @Override
     public Map<String, Object> handleRequest(Map<String, Object> event, Context context) {
         String path = JsonUtils.getNestedField(event, "requestContext", "http", "path");
+        if (path != null && path.startsWith(WELL_KNOWN_PREFIX)) {
+            return handleWellKnown(path, event);
+        }
         if (MCP_PATH.equals(path)) {
             return handleMcpRequest(event);
         }
@@ -50,14 +55,38 @@ public class OktaAppLambda implements RequestHandler<Map<String, Object>, Map<St
         }
     }
 
+    // OAuth discovery endpoints an MCP client fetches during the auth handshake.
+    // These MUST return JSON — routing them here keeps them out of the browser
+    // redirect fallback, which would otherwise send back an Okta HTML login page.
+    private Map<String, Object> handleWellKnown(String path, Map<String, Object> event) {
+        String domainName = JsonUtils.getNestedField(event, "requestContext", "domainName");
+        Map<String, String> jsonHeaders = Map.of("content-type", "application/json");
+        if (path.startsWith(PROTECTED_RESOURCE_METADATA_PATH)) {
+            return HttpUtils.response(200, jsonHeaders,
+                    JsonUtils.toString(oktaDelegate.protectedResourceMetadata(domainName)));
+        }
+        // oauth-authorization-server and openid-configuration both describe the AS.
+        if (path.contains("oauth-authorization-server") || path.contains("openid-configuration")) {
+            return HttpUtils.response(200, jsonHeaders,
+                    JsonUtils.toString(oktaDelegate.authorizationServerMetadata()));
+        }
+        return HttpUtils.response(404, jsonHeaders,
+                JsonUtils.toString(Map.of("error", "not_found")));
+    }
+
     // MCP clients authenticate with an Okta Bearer token (client_credentials flow),
     // so a failed verification returns a JSON 401 rather than the browser redirect.
+    // The www-authenticate header points at our RFC 9728 metadata so the client can
+    // discover the Okta authorization server (see handleWellKnown).
     private Map<String, Object> handleMcpRequest(Map<String, Object> event) {
         try {
             oktaDelegate.readJwt(event);
         } catch (JwtVerificationException e) {
+            String domainName = JsonUtils.getNestedField(event, "requestContext", "domainName");
+            String wwwAuthenticate = "Bearer resource_metadata=\"https://" + domainName
+                    + PROTECTED_RESOURCE_METADATA_PATH + "\"";
             return HttpUtils.response(401,
-                    Map.of("content-type", "application/json", "www-authenticate", "Bearer"),
+                    Map.of("content-type", "application/json", "www-authenticate", wwwAuthenticate),
                     JsonUtils.toString(Map.of(
                             "error", "unauthorized",
                             "message", "A valid Okta bearer token is required")));

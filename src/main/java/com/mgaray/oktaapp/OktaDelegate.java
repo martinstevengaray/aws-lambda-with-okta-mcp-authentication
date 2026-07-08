@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,6 +60,54 @@ public class OktaDelegate {
             token = readCookieValue(event, OKTA_TOKEN_COOKIE);
         }
         return verifier.decode(token);
+    }
+
+    // RFC 9728 Protected Resource Metadata: tells an MCP client which authorization
+    // server (our Okta issuer) guards the /mcp resource. The 401 from /mcp points here.
+    public Map<String, Object> protectedResourceMetadata(String domainName) {
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("resource", "https://" + domainName + "/mcp");
+        metadata.put("authorization_servers", List.of(oktaIssuer));
+        // Tells the client which scopes to request at /authorize; without this an
+        // Okta AS with no default scopes rejects the call ('scope' must be provided).
+        List<String> scopes = scopesList();
+        if (!scopes.isEmpty()) {
+            metadata.put("scopes_supported", scopes);
+        }
+        return metadata;
+    }
+
+    private List<String> scopesList() {
+        if (oktaScopes == null || oktaScopes.isBlank()) {
+            return List.of();
+        }
+        return List.of(oktaScopes.trim().split("\\s+"));
+    }
+
+    // RFC 8414 Authorization Server Metadata. Okta serves this natively at its issuer;
+    // we mirror it for clients that request it from the resource server rather than
+    // following authorization_servers to Okta.
+    public Map<String, Object> authorizationServerMetadata() {
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("issuer", oktaIssuer);
+        metadata.put("authorization_endpoint", oktaIssuer + "/v1/authorize");
+        metadata.put("token_endpoint", oktaIssuer + "/v1/token");
+        metadata.put("jwks_uri", oktaIssuer + "/v1/keys");
+        //metadata.put("registration_endpoint", oktaIssuer + "/v1/clients");
+        // No registration_endpoint on purpose: Okta has no anonymous Dynamic Client
+        // Registration, so advertising it makes the MCP SDK attempt DCR and get a
+        // 403 "Invalid session". Clients must use a pre-registered client_id instead.
+        metadata.put("response_types_supported", List.of("code"));
+        metadata.put("grant_types_supported",
+                List.of("authorization_code", "refresh_token", "client_credentials"));
+        metadata.put("code_challenge_methods_supported", List.of("S256"));
+        metadata.put("token_endpoint_auth_methods_supported",
+                List.of("client_secret_basic", "client_secret_post", "none"));
+        List<String> scopes = scopesList();
+        if (!scopes.isEmpty()) {
+            metadata.put("scopes_supported", scopes);
+        }
+        return metadata;
     }
 
     public Map<String, Object> authenticationRedirects(Map<String, Object> event, Context context) {
