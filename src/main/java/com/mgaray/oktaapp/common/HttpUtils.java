@@ -10,7 +10,7 @@ public class HttpUtils {
 
     public static Map<String, Object> htmlError(int statusCode, String message) {
         return response(statusCode, Map.of("content-type", "text/html; charset=utf-8"),
-                "<!DOCTYPE html><html><body><h1>Sign-in problem</h1><p>"
+                "<!DOCTYPE html><html><body><h1>Error</h1><p>"
                         + message + "</p><p><a href=\"/\">Try again</a></p></body></html>");
     }
 

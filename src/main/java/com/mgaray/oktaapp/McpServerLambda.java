@@ -10,7 +10,7 @@ import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.McpHandler;
 import com.mgaray.oktaapp.auth.OktaDelegate;
-import com.mgaray.oktaapp.web.WepHandler;
+import com.mgaray.oktaapp.web.WebHandler;
 import com.okta.jwt.Jwt;
 import com.okta.jwt.JwtVerificationException;
 
@@ -24,7 +24,7 @@ public class McpServerLambda implements RequestHandler<Map<String, Object>, Map<
 
     private final OktaDelegate oktaDelegate;
     private final McpHandler mcpHandler;
-    private final WepHandler webHandler;
+    private final WebHandler webHandler;
 
     public McpServerLambda() {
         String oktaIssuer = System.getenv("OKTA_ISSUER");
@@ -40,7 +40,7 @@ public class McpServerLambda implements RequestHandler<Map<String, Object>, Map<
         String jiraCloudId = System.getenv("JIRA_CLOUD_ID");
         String jiraToken = AwsServicesDelegate.fetchSmmParameterValue(System.getenv("JIRA_CLIENT_TOKEN_SSM_PARAMETER_KEY"));
         this.mcpHandler = new McpHandler(new JiraClient(jiraEmail, jiraToken, jiraCloudId));
-        this.webHandler = new WepHandler();
+        this.webHandler = new WebHandler();
     }
 
     @Override
@@ -103,6 +103,5 @@ public class McpServerLambda implements RequestHandler<Map<String, Object>, Map<
         }
         return HttpUtils.responseJson(500, "Please try again later");
     }
-
 
 }
