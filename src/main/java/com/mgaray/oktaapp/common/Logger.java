@@ -1,8 +1,7 @@
-package com.mgaray.oktaapp.Logger;
+package com.mgaray.oktaapp.common;
 
 import  com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.mgaray.oktaapp.common.CommonUtils;
 
 public class Logger {
 

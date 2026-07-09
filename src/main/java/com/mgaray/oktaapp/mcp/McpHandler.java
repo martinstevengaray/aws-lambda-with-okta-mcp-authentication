@@ -2,8 +2,8 @@ package com.mgaray.oktaapp.mcp;
 
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
-import com.mgaray.oktaapp.jira.JiraDelegate;
-import com.mgaray.oktaapp.jira.JiraException;
+import com.mgaray.oktaapp.mcp.jira.JiraClient;
+import com.mgaray.oktaapp.mcp.jira.JiraException;
 import com.okta.jwt.Jwt;
 
 import java.nio.charset.StandardCharsets;
@@ -17,7 +17,7 @@ import java.util.Map;
  * HTTP transport. Each Lambda invocation carries a single JSON-RPC request in
  * the body; we dispatch it and return a single JSON-RPC response. No SSE stream
  * and no session id are used (the tools are simple request/response calls).
- * Jira access is delegated to {@link JiraDelegate}.
+ * Jira access is delegated to {@link JiraClient}.
  */
 public class McpHandler {
 
@@ -60,9 +60,9 @@ public class McpHandler {
                             "status", stringProp("Target status or transition name, e.g. \"In Progress\".")),
                             List.of("key", "status"))));
 
-    private final JiraDelegate jira;
+    private final JiraClient jira;
 
-    public McpHandler(JiraDelegate jira) {
+    public McpHandler(JiraClient jira) {
         this.jira = jira;
     }
 

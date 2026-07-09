@@ -1,6 +1,6 @@
-package com.mgaray.oktaapp.okta;
+package com.mgaray.oktaapp.auth;
 
-import com.mgaray.oktaapp.Logger.Logger;
+import com.mgaray.oktaapp.common.Logger;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.okta.jwt.AccessTokenVerifier;
@@ -11,18 +11,20 @@ import com.okta.jwt.JwtVerifiers;
 import java.time.Duration;
 import java.util.Map;
 
-import static com.mgaray.oktaapp.OktaAppLambda.*;
-
 public class OktaDelegate {
 
+
+    static final String REGISTER_PATH = "/register";
+    static final String CALLBACK_PATH = "/callback";
+    static final String PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX = "/.well-known/oauth-protected-resource";
     private static final String PROTECTED_RESOURCE_METADATA_OAUTH_AUTHORIZATION_SERVER_PATH_PREFIX = "/.well-known/oauth-authorization-server";
     private static final String PROTECTED_RESOURCE_METADATA_OAUTH_OPENID_CONFIGURATION_PATH_PREFIX = "/.well-known/openid-configuration";
 
     private static final String OKTA_TOKEN_COOKIE = "okta_token";
     private final AccessTokenVerifier verifier;
 
-    private final McpAuthenticationHandler mcpAuthenticationHandler;
-    private final WebAuthenticationHandler webAuthenticationHandler;
+    private final AuthenticationHandlerMcp authenticationHandlerMcp;
+    private final AuthenticationHandlerWeb authenticationHandlerWeb;
 
     public OktaDelegate(String oktaIssuer,
                         String oktaAudience,
@@ -35,8 +37,8 @@ public class OktaDelegate {
                 .setAudience(oktaAudience)
                 .setConnectionTimeout(Duration.ofSeconds(5))
                 .build();
-        this.mcpAuthenticationHandler = new McpAuthenticationHandler(oktaIssuer, oktaScopes, oktaMcpClientId);
-        this.webAuthenticationHandler = new WebAuthenticationHandler(oktaIssuer, oktaWebClientId, oktaWebClientSecret, oktaScopes, verifier);
+        this.authenticationHandlerMcp = new AuthenticationHandlerMcp(oktaIssuer, oktaScopes, oktaMcpClientId);
+        this.authenticationHandlerWeb = new AuthenticationHandlerWeb(oktaIssuer, oktaWebClientId, oktaWebClientSecret, oktaScopes, verifier);
     }
 
     public Jwt readJwt(Map<String, Object> event) throws JwtVerificationException {
@@ -47,7 +49,7 @@ public class OktaDelegate {
         return verifier.decode(token);
     }
 
-    public boolean isPathPublic(String path) {
+    public boolean isPublicPath(String path) {
         return (path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX) ||
                 path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_AUTHORIZATION_SERVER_PATH_PREFIX) ||
                 path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_OPENID_CONFIGURATION_PATH_PREFIX) ||
@@ -57,27 +59,27 @@ public class OktaDelegate {
 
     public Map<String, Object> handlePublicPath(String path, Map<String, Object> event, Logger logger) {
         if (path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX)) {
-            return mcpAuthenticationHandler.handleOauthProtectedResource(event);
+            return authenticationHandlerMcp.handleOauthProtectedResource(event);
         }
         if (path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_AUTHORIZATION_SERVER_PATH_PREFIX) ||
                 path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_OPENID_CONFIGURATION_PATH_PREFIX)) {
-            return mcpAuthenticationHandler.handleOauthAuthorizationServer(event);
+            return authenticationHandlerMcp.handleOauthAuthorizationServer(event);
         }
         if (REGISTER_PATH.equals(path)) {
-            return mcpAuthenticationHandler.handleRegister(event);
+            return authenticationHandlerMcp.handleRegister(event);
         }
         if (CALLBACK_PATH.equals(path)) {
-            return webAuthenticationHandler.handleCallback(event, logger);
+            return authenticationHandlerWeb.handleCallback(event, logger);
         }
         throw new IllegalStateException("Unsupported path: " + path);
     }
 
     public Map<String, Object> authenticationRedirectMcp(Map<String, Object> event) { //to support mcp clients
-        return this.mcpAuthenticationHandler.authenticationRedirectMcp(event);
+        return this.authenticationHandlerMcp.authenticationRedirectMcp(event);
     }
 
     public Map<String, Object> authenticationRedirectWeb(Map<String, Object> event) {
-        return this.webAuthenticationHandler.authenticationRedirectWeb(event);
+        return this.authenticationHandlerWeb.authenticationRedirectWeb(event);
     }
 
     private String readBearerToken(Map<String, Object> event) {

@@ -1,6 +1,6 @@
-package com.mgaray.oktaapp.okta;
+package com.mgaray.oktaapp.auth;
 
-import com.mgaray.oktaapp.Logger.Logger;
+import com.mgaray.oktaapp.common.Logger;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.okta.jwt.AccessTokenVerifier;
@@ -17,9 +17,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import static com.mgaray.oktaapp.OktaAppLambda.CALLBACK_PATH;
+import static com.mgaray.oktaapp.auth.OktaDelegate.CALLBACK_PATH;
 
-public class WebAuthenticationHandler {
+class AuthenticationHandlerWeb {
 
     private static final String OKTA_TOKEN_COOKIE = "okta_token";
     private static final String OATH_STATE_COOKIE = "oauth_state";
@@ -33,7 +33,7 @@ public class WebAuthenticationHandler {
     private final HttpClient httpClient;
     private final SecureRandom secureRandom;
 
-    public WebAuthenticationHandler(String oktaIssuer,
+    AuthenticationHandlerWeb(String oktaIssuer,
                                     String oktaWebClientId,
                                     String oktaWebClientSecret,
                                     String oktaScopes,
@@ -49,7 +49,7 @@ public class WebAuthenticationHandler {
         this.secureRandom = new SecureRandom();
     }
 
-    public Map<String, Object> authenticationRedirectWeb(Map<String, Object> event) {
+    Map<String, Object> authenticationRedirectWeb(Map<String, Object> event) {
         String path = JsonUtils.getNestedField(event, "requestContext", "http", "path");
         byte[] randomTokenBytes = new byte[24];
         secureRandom.nextBytes(randomTokenBytes);
@@ -70,7 +70,7 @@ public class WebAuthenticationHandler {
     }
 
     // Exchanges the authorization code for an access token, stores it in a session cookie, then redirect back to self.
-    public Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
+    Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
         final String error = JsonUtils.getNestedField(event, "queryStringParameters", "error");
         if (error != null) {
             String errorDescription = JsonUtils.getNestedField(event, "queryStringParameters", "error_description");

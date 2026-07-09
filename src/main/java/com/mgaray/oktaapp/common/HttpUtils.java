@@ -48,16 +48,16 @@ public class HttpUtils {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
-    public static Map<String,Object> parseBase64EncodedBody(Map<String, Object> event) {
-        String body = event.get("body") instanceof String s ? s : "";
-        if (Boolean.TRUE.equals(event.get("isBase64Encoded"))) {
+    public static Map<String,Object> parseBase64EncodedBody(Map<String, Object> request) {
+        String body = request.get("body") instanceof String s ? s : "";
+        if (Boolean.TRUE.equals(request.get("isBase64Encoded"))) {
             body = new String(Base64.getDecoder().decode(body), StandardCharsets.UTF_8);
         }
         return JsonUtils.parse(body);
     }
 
-    public static String readCookieValue(Map<String, Object> event, String cookieName) {
-        if (event.get("cookies") instanceof List<?> cookies) {
+    public static String readCookieValue(Map<String, Object> request, String cookieName) {
+        if (request.get("cookies") instanceof List<?> cookies) {
             for (Object cookie : cookies) {
                 if (cookie instanceof String s && s.startsWith(cookieName + "=")) {
                     return s.substring(cookieName.length() + 1);
