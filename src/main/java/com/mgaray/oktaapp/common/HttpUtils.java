@@ -43,4 +43,15 @@ public class HttpUtils {
         return JsonUtils.parse(body);
     }
 
+    public static String readCookieValue(Map<String, Object> event, String cookieName) {
+        if (event.get("cookies") instanceof List<?> cookies) {
+            for (Object cookie : cookies) {
+                if (cookie instanceof String s && s.startsWith(cookieName + "=")) {
+                    return s.substring(cookieName.length() + 1);
+                }
+            }
+        }
+        return null;
+    }
+
 }
