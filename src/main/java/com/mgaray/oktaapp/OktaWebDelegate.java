@@ -52,9 +52,9 @@ public class OktaWebDelegate {
         String path = JsonUtils.getNestedField(event, "requestContext", "http", "path");
         byte[] randomTokenBytes = new byte[24];
         secureRandom.nextBytes(randomTokenBytes);
-        String state = base64Url(randomTokenBytes);
+        String state = HttpUtils.base64Url(randomTokenBytes);
         String rawQuery = event.get("rawQueryString") instanceof String q && !q.isEmpty() ? "?" + q : "";
-        String original = base64Url((path + rawQuery).getBytes(StandardCharsets.UTF_8));
+        String original = HttpUtils.base64Url((path + rawQuery).getBytes(StandardCharsets.UTF_8));
         String domainName = JsonUtils.getNestedField(event,"requestContext", "domainName");
         String redirectUri = "https://" + domainName + CALLBACK_PATH;
         String authorizeUrl = this.oktaIssuer + "/v1/authorize"
@@ -66,10 +66,6 @@ public class OktaWebDelegate {
         return HttpUtils.response(302, Map.of("location", authorizeUrl), "",
                 List.of(OATH_STATE_COOKIE + "=" + state + "." + original
                         + "; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=300"));
-    }
-
-    private String base64Url(byte[] bytes) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     // Exchanges the authorization code for an access token, stores it in a session cookie, then redirect back to self.
@@ -124,4 +120,5 @@ public class OktaWebDelegate {
                 OKTA_TOKEN_COOKIE + "=" + accessToken + "; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=" + maxAge,
                 OATH_STATE_COOKIE + "=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0")); //clear out oath cookie
     }
+
 }

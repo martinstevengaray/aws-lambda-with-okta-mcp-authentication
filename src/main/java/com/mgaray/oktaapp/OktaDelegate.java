@@ -57,8 +57,13 @@ public class OktaDelegate {
         return this.oktaMcpDelegate.authenticationRedirectMcp(event);
     }
 
-    public Map<String, Object> handleWellKnown(String path, Map<String, Object> event) {
-        return this.oktaMcpDelegate.handleWellKnown(path, event);
+    public Map<String, Object> handleOauthProtectedResource(Map<String, Object> event) {
+        return this.oktaMcpDelegate.handleOauthProtectedResource(event);
+    }
+
+    public Map<String, Object> handleOauthAuthorizationServer(Map<String, Object> event) {
+        return this.oktaMcpDelegate.handleOauthAuthorizationServer(event);
+
     }
 
     public Map<String, Object> handleRegister(Map<String, Object> event) {

@@ -54,4 +54,8 @@ public class HttpUtils {
         return null;
     }
 
+    public static String base64Url(byte[] bytes) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
 }

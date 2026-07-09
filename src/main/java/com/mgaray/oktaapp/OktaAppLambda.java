@@ -12,6 +12,7 @@ import com.okta.jwt.JwtVerificationException;
 
 import java.util.Map;
 
+import static com.mgaray.oktaapp.OktaMcpDelegate.*;
 import static com.mgaray.oktaapp.OktaWebDelegate.CALLBACK_PATH;
 
 public class OktaAppLambda implements RequestHandler<Map<String, Object>, Map<String, Object>> {
@@ -46,7 +47,16 @@ public class OktaAppLambda implements RequestHandler<Map<String, Object>, Map<St
         String path = JsonUtils.getNestedField(event, "requestContext", "http", "path");
         //public endpoints for authentication flow
         if (path != null && path.startsWith(WELL_KNOWN_PREFIX)) {
-            return oktaDelegate.handleWellKnown(path, event);
+            if (path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX)) {
+                return oktaDelegate.handleOauthProtectedResource(event);
+            }
+            if (path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_AUTHORIZATION_SERVER_PATH_PREFIX)) {
+                return oktaDelegate.handleOauthAuthorizationServer(event);
+            }
+            if (path.startsWith(PROTECTED_RESOURCE_METADATA_OAUTH_OPENID_CONFIGURATION_PATH_PREFIX)) {
+                return oktaDelegate.handleOauthAuthorizationServer(event);
+            }
+            throw new IllegalStateException("unknown " + WELL_KNOWN_PREFIX + " path");
         }
         if (REGISTER_PATH.equals(path)) {
             return oktaDelegate.handleRegister(event);
