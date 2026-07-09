@@ -20,15 +20,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mgaray.oktaapp.OktaAppLambda.PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH;
-
 public class OktaDelegate {
 
     private static final String OKTA_TOKEN_COOKIE = "okta_token";
     private static final String OATH_STATE_COOKIE = "oauth_state";
     private static final String CALLBACK_PATH = "/callback";
     private static final String REGISTER_PATH = "/register";
+    private static final String PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH = "/.well-known/oauth-protected-resource";
     private static final Map<String, String> JSON_HEADERS = Map.of("content-type", "application/json");
+    private static final String AUTHORIZATION_SERVER = "oauth-authorization-server";
+    private static final String OPENID_CONFIGURATION = "openid-configuration";
 
     private final String oktaIssuer;
     private final String oktaWebClientId;
@@ -71,9 +72,7 @@ public class OktaDelegate {
         return verifier.decode(token);
     }
 
-
-
-    public Map<String, Object> authenticationRedirectNativeApp(Map<String, Object> event) { //to support mcp clients
+    public Map<String, Object> authenticationRedirectMcp(Map<String, Object> event) { //to support mcp clients
         String domainName = JsonUtils.getNestedField(event, "requestContext", "domainName");
         String wwwAuthenticate = "Bearer resource_metadata=\"https://" + domainName
                 + PROTECTED_RESOURCE_METADATA_OAUTH_PROTECTED_RESOURCE_PATH + "\"";
@@ -91,8 +90,9 @@ public class OktaDelegate {
             return HttpUtils.response(200, jsonHeaders,
                     JsonUtils.toString(protectedResourceMetadata(domainName)));
         }
-        // endpoints '/.well-known/oauth-authorization-server' and '/.well-known/openid-configuration' both describe the AS.
-        if (path.contains("oauth-authorization-server") || path.contains("openid-configuration")) {
+        // endpoints '/.well-known/oauth-authorization-server' and '/.well-known/openid-configuration'
+        // both describe the Authorization Server.
+        if (path.contains(AUTHORIZATION_SERVER) || path.contains(OPENID_CONFIGURATION)) {
             return HttpUtils.response(200, jsonHeaders,
                     JsonUtils.toString(authorizationServerMetadata(domainName)));
         }
@@ -177,7 +177,7 @@ public class OktaDelegate {
 
     //-----above for native-app, below or web-app
 
-    public Map<String, Object> authenticationRedirects(Map<String, Object> event, Context context) {
+    public Map<String, Object> authenticationRedirectWeb(Map<String, Object> event, Context context) {
         String path = JsonUtils.getNestedField(event, "requestContext", "http", "path");
         if (!CALLBACK_PATH.equals(path)) {
             return redirectToOkta(event, path);
