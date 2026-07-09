@@ -72,9 +72,9 @@ public class OktaDelegate {
     // True when a pre-registered MCP (Native) client id is configured, turning on the
     // DCR shim (/register). When off, clients must be told a static client_id and
     // discovery points straight at the Okta issuer.
-    public boolean dcrShimEnabled() {
-        return oktaMcpClientId != null && !oktaMcpClientId.isBlank();
-    }
+//    public boolean dcrShimEnabled() {
+//        return oktaMcpClientId != null && !oktaMcpClientId.isBlank();
+//    }
 
     // RFC 9728 Protected Resource Metadata: tells an MCP client which authorization
     // server guards the /mcp resource. The 401 from /mcp points here. With the shim on
@@ -83,21 +83,15 @@ public class OktaDelegate {
     public Map<String, Object> protectedResourceMetadata(String domainName) {
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("resource", "https://" + domainName + "/mcp");
-        String authServer = dcrShimEnabled() ? "https://" + domainName : oktaIssuer;
+        String authServer = "https://" + domainName; //alternatively 'authServer = oktaIssuer;'
         metadata.put("authorization_servers", List.of(authServer));
         // Tells the client which scopes to request at /authorize; without this an
         // Okta AS with no default scopes rejects the call ('scope' must be provided).
-        List<String> scopes = scopesList();
-        if (!scopes.isEmpty()) {
-            metadata.put("scopes_supported", scopes);
-        }
+        metadata.put("scopes_supported", scopesList());
         return metadata;
     }
 
     private List<String> scopesList() {
-        if (oktaScopes == null || oktaScopes.isBlank()) {
-            return List.of();
-        }
         return List.of(oktaScopes.trim().split("\\s+"));
     }
 
@@ -108,13 +102,11 @@ public class OktaDelegate {
     // With the shim off we simply mirror Okta and omit registration.
     public Map<String, Object> authorizationServerMetadata(String domainName) {
         Map<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put("issuer", dcrShimEnabled() ? "https://" + domainName : oktaIssuer);
+        metadata.put("issuer", "https://" + domainName); // alternatively  oktaIssuer
         metadata.put("authorization_endpoint", oktaIssuer + "/v1/authorize");
         metadata.put("token_endpoint", oktaIssuer + "/v1/token");
         metadata.put("jwks_uri", oktaIssuer + "/v1/keys");
-        if (dcrShimEnabled()) {
-            metadata.put("registration_endpoint", "https://" + domainName + REGISTER_PATH);
-        }
+        metadata.put("registration_endpoint", "https://" + domainName + REGISTER_PATH);
         metadata.put("response_types_supported", List.of("code"));
         metadata.put("grant_types_supported",
                 List.of("authorization_code", "refresh_token", "client_credentials"));
@@ -134,24 +126,20 @@ public class OktaDelegate {
     // client's own metadata so its local validation is satisfied. NOTE: that Native app
     // must already have each client's redirect_uri registered in Okta — the shim can't
     // add them (that was the real proxy's job).
-    public Map<String, Object> registerClient(String requestBody) {
-        if (!dcrShimEnabled()) {
-            return HttpUtils.response(404, JSON_HEADERS, JsonUtils.toString(Map.of("error", "not_found")));
-        }
+    public Map<String, Object> registerClient(Map<String, Object> event) {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("client_id", oktaMcpClientId);
         response.put("token_endpoint_auth_method", "none");
         try {
-            Map<String, Object> request = JsonUtils.parse(requestBody);
-            for (String field : List.of("redirect_uris", "grant_types", "response_types",
-                    "scope", "client_name")) {
+            Map<String, Object> request = HttpUtils.parseBase64EncodedBody(event);
+            for (String field : List.of("redirect_uris", "grant_types", "response_types", "scope", "client_name")) {
                 Object value = request.get(field);
                 if (value != null) {
                     response.put(field, value);
                 }
             }
         } catch (Exception ignored) {
-            // Body absent or unparseable — client_id alone is a valid RFC 7591 response.
+            // do nothing, body absent or unparseable — client_id alone is a valid RFC 7591 response.
         }
         return HttpUtils.response(201, JSON_HEADERS, JsonUtils.toString(response));
     }

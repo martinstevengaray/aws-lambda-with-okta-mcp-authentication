@@ -2,6 +2,7 @@ package com.mgaray.oktaapp.common;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,14 @@ public class HttpUtils {
 
     public static String urlEncode(String value) {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    public static Map<String,Object> parseBase64EncodedBody(Map<String, Object> event) {
+        String body = event.get("body") instanceof String s ? s : "";
+        if (Boolean.TRUE.equals(event.get("isBase64Encoded"))) {
+            body = new String(Base64.getDecoder().decode(body), StandardCharsets.UTF_8);
+        }
+        return JsonUtils.parse(body);
     }
 
 }
