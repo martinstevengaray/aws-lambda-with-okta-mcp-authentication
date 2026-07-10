@@ -45,7 +45,20 @@ public class McpServerLambda implements RequestHandler<Map<String, Object>, Map<
 
     @Override
     public Map<String, Object> handleRequest(Map<String, Object> request, Context context) {
-        Logger logger = new Logger(context);
+        if (DEBUG) {
+            String sourceId = JsonUtils.getNestedField(request, "requestContext", "http", "sourceIp");
+            String path = JsonUtils.getNestedField(request, "requestContext", "http", "method") + ":" +
+                    JsonUtils.getNestedField(request, "requestContext", "http", "path");
+            Logger logger = new Logger(context, sourceId);
+            logger.log("Request " + path, request);
+            Map<String, Object> response = handle(request, context, logger);
+            logger.log("Response " + path, response);
+            return response;
+        }
+        return handle(request, context, new Logger(context));
+    }
+
+    public Map<String, Object> handle(Map<String, Object> request, Context context, Logger logger) {
         try {
             List<String> errors = validate(request);
             if (!errors.isEmpty()) {
