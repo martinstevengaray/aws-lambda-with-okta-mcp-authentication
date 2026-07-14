@@ -18,7 +18,7 @@ import java.util.*;
 
 public class McpServerLambda implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
 
     private static final String MCP_PATH = "/mcp";
 
