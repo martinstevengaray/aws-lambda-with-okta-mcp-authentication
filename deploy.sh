@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 ./gradlew build
 VERSION=$(./gradlew -q printVersion)
 
-#load terraform variables from system config:
+#load:
 #  OKTA_URL_PREFIX
 #  OKTA_WEB_CLIENT_ID  (client secret loaded via deploy.secrets.sh)
 #  OKTA_MCP_CLIENT_ID
@@ -19,19 +19,13 @@ VERSION=$(./gradlew -q printVersion)
 #  LAMBDA_FUNCTION_NAME
 source local/deployment-config.sh
 
-# Terraform reads TF_VAR_<name> env vars as input variables (see terraform/variables.tf).
-# The browser OIDC flow needs a "Web Application" Okta app (OKTA_WEB_CLIENT_ID); the
-# OKTA_API_CLIENT_ID service app used by client-curl.sh cannot access /authorize.
-# Empty/unset OKTA_WEB_CLIENT_ID deploys with the browser flow disabled.
-# The web client secret is NOT passed through terraform — it lives in SSM
-# Parameter Store, pushed by ./deploy_secrets.sh (see README "Deploy").
 export TF_VAR_okta_issuer="https://${OKTA_URL_PREFIX}.okta.com/oauth2/default"
-export TF_VAR_okta_web_client_id="${OKTA_WEB_CLIENT_ID:-}"
-export TF_VAR_okta_scopes="${OKTA_SCOPES:-}"
+export TF_VAR_okta_web_client_id="${OKTA_WEB_CLIENT_ID}"
+export TF_VAR_okta_scopes="${OKTA_SCOPES}"
 # Pre-registered Native app id handed out by the DCR shim (empty disables it).
-export TF_VAR_okta_mcp_client_id="${OKTA_MCP_CLIENT_ID:-}"
-export TF_VAR_jira_client_email=$JIRA_CLIENT_EMAIL
-export TF_VAR_jira_cloud_id=$JIRA_CLOUDID
+export TF_VAR_okta_mcp_client_id="${OKTA_MCP_CLIENT_ID}"
+export TF_VAR_jira_client_email="${JIRA_CLIENT_EMAIL}"
+export TF_VAR_jira_cloud_id="${JIRA_CLOUDID}"
 export TF_VAR_aws_lambda_function_name="${LAMBDA_FUNCTION_NAME}"
 
 # Skipped once initialized — if the backend or providers change, delete terraform/.terraform to re-init.
