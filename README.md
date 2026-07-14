@@ -26,13 +26,13 @@ export TERRAFORM_TFSTATE_S3_REGION="<your terraform tfstate s3 region>"
 export DEPLOYMENT_REGION="<your deployment region>"
 export LAMBDA_FUNCTION_NAME="<your lambda function name>"
 # Jira user token for example tool
-export JIRA_CLIENT_TOKEN="<your jira client token"
+export JIRA_CLIENT_TOKEN="<your jira client token>"
 export JIRA_CLIENT_EMAIL="<your client email>"
 export JIRA_CLOUDID="<your jira cloudId>" # curl -s "https://<jir-site-url>/_edge/tenant_info"
 ```
 4) Deploy lambda and associated infrastructure with [deploy.sh](deploy.sh) -auto-approve
 5) Deploy secrets with [deploy-secrets.sh](deploy-secrets.sh)
-6) In Okta admin dashboard add `<function_url>/oath/callback` as the callback uri for the native app created in step 2. (function_url can be found in the output of deploy.sh)
+6) In Okta admin dashboard add `<function_url>/oauth/callback` as the callback uri for the native app created in step 2. (function_url can be found in the output of deploy.sh)
 7) Register MCP server with agent. `claude mcp add --transport http mcp-server-lambda <function_url>/mcp`
 8) Ask agent to connect to mcp server `/mcp`, authenticate, and test
 
