@@ -33,9 +33,6 @@ claude mcp add --transport http mcp-server-lambda <function_url>/mcp
 ```
 8) ask agent to connect mcp server with '/mcp', authenticate, and test
 
-
-# WIP:
-
 ### optional setup for api-curl.sh and api-rpc-curl.sh
 1) Via okta admin dashboard create new machine to machine application with id+secret.
 2) Create new configuration script at: ./local/api-curl-config.sh
