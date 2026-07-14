@@ -1,6 +1,6 @@
 # AWS Lambda with Okta MCP Authentication
 
-An SSO Okta-authenticated MCP server, running on AWS lambda.
+An SSO Okta-authenticated MCP server, running on AWS Lambda.
 
 The goal of this project is to provide a template for a MCP-server with SSO integration deployed as an AWS lambda. It uses Java + Gradle for the server, Terraform for infrastructure, and bash scripts for deployment. The real value-add is the SSO authentication negotiation flow with Okta. It follows browser based authentication. After registering the mcp with an agent, the authentication process will open a browser at Okta to verify the user. It is a great starting point for an SSO authenticated MCP server when Server-Sent Events are not required. It provides a cost-effective way to deploy a serverless cloud MCP server.
 
@@ -28,7 +28,7 @@ export LAMBDA_FUNCTION_NAME="<your lambda function name>"
 # Jira user token for example tool
 export JIRA_CLIENT_TOKEN="<your jira client token>"
 export JIRA_CLIENT_EMAIL="<your client email>"
-export JIRA_CLOUDID="<your jira cloudId>" # curl -s "https://<jir-site-url>/_edge/tenant_info"
+export JIRA_CLOUDID="<your jira cloudId>" # curl -s "https://<jira-site-url>/_edge/tenant_info"
 ```
 4) Deploy lambda and associated infrastructure with [deploy.sh](deploy.sh) -auto-approve
 5) Deploy secrets with [deploy-secrets.sh](deploy-secrets.sh)
@@ -36,7 +36,7 @@ export JIRA_CLOUDID="<your jira cloudId>" # curl -s "https://<jir-site-url>/_edg
 7) Register MCP server with agent. `claude mcp add --transport http mcp-server-lambda <function_url>/mcp`
 8) Ask agent to connect to mcp server `/mcp`, authenticate, and test
 
-### optional setup for the browser client
+### Optional setup for the browser client
 In addition to the MCP endpoint, the lambda can serve its web pages directly to a browser, authenticating the user via an Okta "Web Application" app.
 1) In Okta admin dashboard create new app using: OIDC Web Application with PKCE. Use `<function_url>/callback` as a sign-in redirect uri and assign app to user.
 2) Add to ./local/deployment-config.sh:
@@ -44,10 +44,10 @@ In addition to the MCP endpoint, the lambda can serve its web pages directly to 
 export OKTA_WEB_CLIENT_ID="<your okta web client id>"
 export OKTA_WEB_CLIENT_SECRET="<your okta web client secret>"
 ```
-3) After redeploying, open browser at `<function-url>`
+3) After redeploying, open browser at `<function_url>`
 
 
-### optional setup for api-curl.sh and api-rpc-curl.sh
+### Optional setup for api-curl.sh and api-rpc-curl.sh
 1) In Okta admin dashboard create new machine to machine application with id+secret.
 2) Create new configuration script at: ./local/api-curl-config.sh
 ```bash
