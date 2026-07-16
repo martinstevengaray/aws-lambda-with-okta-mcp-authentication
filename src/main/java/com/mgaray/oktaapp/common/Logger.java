@@ -24,7 +24,7 @@ public class Logger {
     }
 
     public void log(String message, Map<String ,Object> objectMap) {
-        this.lambdaLogger.log(idPrefix + message + " : " + JsonUtils.toString(objectMap));
+        this.lambdaLogger.log(idPrefix + message + " : " + JsonUtils.toJson(objectMap));
     }
 
     public void error(String message, Exception e) {

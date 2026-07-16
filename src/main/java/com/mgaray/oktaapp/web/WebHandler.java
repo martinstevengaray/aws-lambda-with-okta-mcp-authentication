@@ -21,7 +21,7 @@ public class WebHandler {
             response.put("request", request);
         }
         response.put("jwtClaims", jwt.getClaims());
-        return HttpUtils.responseJson(200, JsonUtils.toString(response));
+        return HttpUtils.responseJson(200, JsonUtils.toJson(response));
     }
 
 }

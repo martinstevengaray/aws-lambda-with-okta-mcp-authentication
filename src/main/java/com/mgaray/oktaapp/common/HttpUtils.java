@@ -23,7 +23,7 @@ public class HttpUtils {
     }
 
     public static Map<String, Object> responseJson(int statusCode, Map<String, Object> body) {
-        return response(statusCode, JSON_HEADERS, JsonUtils.toString(body), null);
+        return response(statusCode, JSON_HEADERS, JsonUtils.toJson(body), null);
     }
 
     public static Map<String, Object> responseJson(int statusCode, Map<String, String> otherHeaders, String body) {

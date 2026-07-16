@@ -176,7 +176,7 @@ public class McpHandler {
         body.put("jsonrpc", "2.0");
         body.put("id", id);
         body.put("result", result);
-        return HttpUtils.responseJson(200, JsonUtils.toString(body));
+        return HttpUtils.responseJson(200, JsonUtils.toJson(body));
     }
 
     private static Map<String, Object> rpcError(Object id, int code, String message) {
@@ -187,7 +187,7 @@ public class McpHandler {
         body.put("jsonrpc", "2.0");
         body.put("id", id);
         body.put("error", error);
-        return HttpUtils.responseJson(200, JsonUtils.toString(body));
+        return HttpUtils.responseJson(200, JsonUtils.toJson(body));
     }
 
     private static String readBody(Map<String, Object> event) {

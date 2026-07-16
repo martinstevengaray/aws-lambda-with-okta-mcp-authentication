@@ -126,7 +126,7 @@ public class JiraClient {
                 .header("authorization", authHeader)
                 .header("accept", "application/json")
                 .header("content-type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toString(body), StandardCharsets.UTF_8))
+                .POST(HttpRequest.BodyPublishers.ofString(JsonUtils.toJson(body), StandardCharsets.UTF_8))
                 .build();
         return handle(send(request));
     }

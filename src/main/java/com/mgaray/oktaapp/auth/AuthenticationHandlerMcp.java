@@ -33,7 +33,7 @@ class AuthenticationHandlerMcp {
                 + WELL_KNOWN_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX + "\"";
         return HttpUtils.responseJson(401,
                 Map.of("www-authenticate", wwwAuthenticate),
-                JsonUtils.toString(Map.of(
+                JsonUtils.toJson(Map.of(
                         "error", "unauthorized",
                         "message", "A valid Okta bearer token is required")));
     }
@@ -51,7 +51,7 @@ class AuthenticationHandlerMcp {
         // Tells the client which scopes to request at /authorize; without this an
         // Okta AS with no default scopes rejects the call ('scope' must be provided).
         metadata.put("scopes_supported", oktaScopes);
-        return HttpUtils.responseJson(200, JsonUtils.toString(metadata));
+        return HttpUtils.responseJson(200, JsonUtils.toJson(metadata));
     }
 
     Map<String, Object> handleOauthAuthorizationServer(Map<String, Object> event) {
@@ -75,7 +75,7 @@ class AuthenticationHandlerMcp {
         if (!scopes.isEmpty()) {
             metadata.put("scopes_supported", scopes);
         }
-        return HttpUtils.response(200, jsonHeaders, JsonUtils.toString(metadata));
+        return HttpUtils.response(200, jsonHeaders, JsonUtils.toJson(metadata));
     }
 
     // DCR shim: satisfies a client's RFC 7591 registration POST without calling Okta.
@@ -99,7 +99,7 @@ class AuthenticationHandlerMcp {
         } catch (Exception ignored) {
             // do nothing, body absent or unparseable — client_id alone is a valid RFC 7591 response.
         }
-        return HttpUtils.responseJson(201, JsonUtils.toString(response));
+        return HttpUtils.responseJson(201, JsonUtils.toJson(response));
     }
 
 }

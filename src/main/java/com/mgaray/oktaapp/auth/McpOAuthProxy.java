@@ -133,7 +133,7 @@ class McpOAuthProxy {
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
             logger.log("MCP proxy token exchange failed: " + e);
-            return HttpUtils.responseJson(502, JsonUtils.toString(Map.of(
+            return HttpUtils.responseJson(502, JsonUtils.toJson(Map.of(
                     "error", "server_error",
                     "error_description", "token exchange with Okta failed")));
         }
@@ -152,7 +152,7 @@ class McpOAuthProxy {
         if (clientState != null) {
             payload.put("cs", clientState);
         }
-        String encoded = HttpUtils.base64Url(JsonUtils.toString(payload).getBytes(StandardCharsets.UTF_8));
+        String encoded = HttpUtils.base64Url(JsonUtils.toJson(payload).getBytes(StandardCharsets.UTF_8));
         return encoded + "." + HttpUtils.base64Url(hmac(encoded));
     }
 
