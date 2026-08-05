@@ -45,6 +45,7 @@ export OKTA_WEB_CLIENT_ID="<your okta web client id>"
 export OKTA_WEB_CLIENT_SECRET="<your okta web client secret>"
 ```
 3) After redeploying, open browser at `<function_url>`
+4) Sign out at `/logout`: this clears the session cookie. The Okta session itself is left intact, so signing in again is a silent redirect and other Okta apps are unaffected.
 
 
 ### Optional setup for api-curl.sh and api-rpc-curl.sh

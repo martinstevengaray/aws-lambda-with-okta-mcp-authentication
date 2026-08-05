@@ -16,6 +16,8 @@ public class OktaDelegate {
     static final String OKTA_TOKEN_COOKIE = "okta_token";
     static final String REGISTER_PATH = "/register";
     static final String CALLBACK_PATH = "/callback";
+    // Public so an expired or already-revoked session still logs out instead of bouncing to Okta.
+    static final String LOGOUT_PATH = "/logout";
     // MCP OAuth proxy: this Lambda fronts Okta's authorize/token so it can honor
     // each MCP client's own loopback redirect_uri without registering it in Okta.
     static final String AUTHORIZE_PATH = "/authorize";
@@ -62,6 +64,7 @@ public class OktaDelegate {
                 path.startsWith(WELL_KNOWN_OAUTH_OPENID_CONFIGURATION_PATH_PREFIX) ||
                 REGISTER_PATH.equals(path) ||
                 CALLBACK_PATH.equals(path) ||
+                LOGOUT_PATH.equals(path) ||
                 AUTHORIZE_PATH.equals(path) ||
                 TOKEN_PATH.equals(path) ||
                 MCP_OAUTH_CALLBACK_PATH.equals(path));
@@ -80,6 +83,9 @@ public class OktaDelegate {
         }
         if (CALLBACK_PATH.equals(path)) {
             return authenticationHandlerWeb.handleCallback(event, logger);
+        }
+        if (LOGOUT_PATH.equals(path)) {
+            return authenticationHandlerWeb.handleLogout();
         }
         if (AUTHORIZE_PATH.equals(path)) {
             return mcpOAuthProxy.handleAuthorize(event);
