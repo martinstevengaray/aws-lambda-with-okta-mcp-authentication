@@ -4,15 +4,12 @@ import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.common.Logger;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -49,14 +46,14 @@ import static com.mgaray.oktaapp.auth.OktaDelegate.MCP_OAUTH_CALLBACK_PATH;
 class McpOAuthProxy {
 
     private final String oktaIssuer;
-    private final byte[] stateSigningKey;
+    private final SignedState signedState;
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
-    McpOAuthProxy(String oktaIssuer, String stateSigningKey) {
-        this.oktaIssuer = oktaIssuer;
-        this.stateSigningKey = stateSigningKey.getBytes(StandardCharsets.UTF_8);
+    McpOAuthProxy(OktaConfig config) {
+        this.oktaIssuer = config.issuer();
+        this.signedState = new SignedState(config.symmetricSigningKey());
     }
 
     // ---- /authorize : redirect the client to Okta under our own redirect_uri ----
@@ -72,7 +69,7 @@ class McpOAuthProxy {
         // state carrying where to send the client back. Unknown params (resource,
         // nonce, …) pass through untouched so we don't have to enumerate them.
         params.put("redirect_uri", ourCallbackUri(event));
-        params.put("state", signState(clientRedirectUri, clientState));
+        params.put("state", signedState.sign(clientRedirectUri, clientState));
         params.putIfAbsent("response_type", "code");
         String authorizeUrl = oktaIssuer + "/v1/authorize?" + toUrlEncoded(params);
         return HttpUtils.response(302, Map.of("location", authorizeUrl), "");
@@ -82,9 +79,9 @@ class McpOAuthProxy {
 
     Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
         String state = queryParam(event, "state");
-        ClientReturn target;
+        SignedState.ClientReturn target;
         try {
-            target = verifyState(state);
+            target = signedState.verify(state);
         } catch (Exception e) {
             logger.log("MCP proxy callback rejected: " + e.getMessage());
             return HttpUtils.htmlError(400, "Invalid or tampered authorization state");
@@ -139,54 +136,6 @@ class McpOAuthProxy {
         }
         // Pass Okta's response (success or OAuth error) straight back to the client.
         return HttpUtils.responseJson(response.statusCode(), response.body());
-    }
-
-    // ---- signed state ----
-
-    private record ClientReturn(String redirectUri, String state) {}
-
-    // state = base64url(JSON{ru, cs}) + "." + base64url(HMAC-SHA256(payload)).
-    private String signState(String clientRedirectUri, String clientState) {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("ru", clientRedirectUri);
-        if (clientState != null) {
-            payload.put("cs", clientState);
-        }
-        String encoded = HttpUtils.base64Url(JsonUtils.toJson(payload).getBytes(StandardCharsets.UTF_8));
-        return encoded + "." + HttpUtils.base64Url(hmac(encoded));
-    }
-
-    private ClientReturn verifyState(String state) {
-        if (state == null) {
-            throw new IllegalArgumentException("missing state");
-        }
-        int dot = state.lastIndexOf('.');
-        if (dot < 0) {
-            throw new IllegalArgumentException("malformed state");
-        }
-        String encoded = state.substring(0, dot);
-        byte[] presented = Base64.getUrlDecoder().decode(state.substring(dot + 1));
-        if (!MessageDigest.isEqual(hmac(encoded), presented)) {
-            throw new SecurityException("bad state signature");
-        }
-        Map<String, Object> payload = JsonUtils.parse(
-                new String(Base64.getUrlDecoder().decode(encoded), StandardCharsets.UTF_8));
-        Object ru = payload.get("ru");
-        if (!(ru instanceof String redirectUri) || redirectUri.isBlank()) {
-            throw new IllegalArgumentException("state missing redirect_uri");
-        }
-        Object cs = payload.get("cs");
-        return new ClientReturn(redirectUri, cs instanceof String s ? s : null);
-    }
-
-    private byte[] hmac(String data) {
-        try {
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(stateSigningKey, "HmacSHA256"));
-            return mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            throw new IllegalStateException("HMAC of proxy state failed", e);
-        }
     }
 
     // ---- helpers ----

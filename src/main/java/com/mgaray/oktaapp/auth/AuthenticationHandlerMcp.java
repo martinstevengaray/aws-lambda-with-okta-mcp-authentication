@@ -19,12 +19,10 @@ class AuthenticationHandlerMcp {
     // MCP clients so they never attempt real (anonymous) registration against Okta.
     private final String oktaMcpClientId;
 
-    AuthenticationHandlerMcp(String oktaIssuer,
-                                    String oktaScopes,
-                                    String oktaMcpClientId) {
-        this.oktaIssuer = oktaIssuer;
-        this.oktaScopes = List.of(oktaScopes.trim().split("\\s+"));
-        this.oktaMcpClientId = oktaMcpClientId;
+    AuthenticationHandlerMcp(OktaConfig config) {
+        this.oktaIssuer = config.issuer();
+        this.oktaScopes = List.of(config.scopes().trim().split("\\s+"));
+        this.oktaMcpClientId = config.mcpClientId();
     }
 
     Map<String, Object> authenticationRedirectMcp(Map<String, Object> event) { //to support mcp clients

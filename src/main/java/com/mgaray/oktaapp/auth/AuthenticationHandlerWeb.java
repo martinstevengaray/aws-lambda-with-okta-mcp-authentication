@@ -34,15 +34,11 @@ class AuthenticationHandlerWeb {
     private final HttpClient httpClient;
     private final SecureRandom secureRandom;
 
-    AuthenticationHandlerWeb(String oktaIssuer,
-                                    String oktaWebClientId,
-                                    String oktaWebClientSecret,
-                                    String oktaScopes,
-                                    AccessTokenVerifier verifier) {
-        this.oktaIssuer = oktaIssuer;
-        this.oktaWebClientId = oktaWebClientId;
-        this.oktaWebClientSecret = oktaWebClientSecret;
-        this.oktaScopes = oktaScopes;
+    AuthenticationHandlerWeb(OktaConfig config, AccessTokenVerifier verifier) {
+        this.oktaIssuer = config.issuer();
+        this.oktaWebClientId = config.webClientId();
+        this.oktaWebClientSecret = config.webClientSecret();
+        this.oktaScopes = config.scopes();
         this.verifier = verifier;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))

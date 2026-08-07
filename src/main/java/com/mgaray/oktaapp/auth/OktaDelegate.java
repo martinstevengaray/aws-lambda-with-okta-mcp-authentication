@@ -33,21 +33,15 @@ public class OktaDelegate {
     private final AuthenticationHandlerWeb authenticationHandlerWeb;
     private final McpOAuthProxy mcpOAuthProxy;
 
-    public OktaDelegate(String oktaIssuer,
-                        String oktaAudience,
-                        String oktaWebClientId,
-                        String oktaWebClientSecret,
-                        String oktaScopes,
-                        String oktaMcpClientId,
-                        String symmetricSigningKey) {
+    public OktaDelegate(OktaConfig config) {
         this.verifier = JwtVerifiers.accessTokenVerifierBuilder()
-                .setIssuer(oktaIssuer)
-                .setAudience(oktaAudience)
+                .setIssuer(config.issuer())
+                .setAudience(config.audience())
                 .setConnectionTimeout(Duration.ofSeconds(5))
                 .build();
-        this.mcpOAuthProxy = new McpOAuthProxy(oktaIssuer, symmetricSigningKey);
-        this.authenticationHandlerMcp = new AuthenticationHandlerMcp(oktaIssuer, oktaScopes, oktaMcpClientId);
-        this.authenticationHandlerWeb = new AuthenticationHandlerWeb(oktaIssuer, oktaWebClientId, oktaWebClientSecret, oktaScopes, verifier);
+        this.mcpOAuthProxy = new McpOAuthProxy(config);
+        this.authenticationHandlerMcp = new AuthenticationHandlerMcp(config);
+        this.authenticationHandlerWeb = new AuthenticationHandlerWeb(config, verifier);
     }
 
     public Jwt readJwt(Map<String, Object> event) throws JwtVerificationException {
