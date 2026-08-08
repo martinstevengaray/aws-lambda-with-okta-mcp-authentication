@@ -23,43 +23,6 @@ public class McpHandler {
 
     private static final String DEFAULT_PROTOCOL_VERSION = "2025-06-18";
 
-    // Tool descriptors advertised by tools/list, with JSON InputSchema for arguments.
-    private static final List<Map<String, Object>> TOOLS = List.of(
-            tool("list_my_issues",
-                    "List Jira issues assigned to you, most recently updated first.",
-                    schema(Map.of("maxResults", intProp("Maximum number of issues to return (default 50).")),
-                            List.of())),
-            tool("search_issues",
-                    "Search Jira issues with a JQL query.",
-                    schema(Map.of(
-                            "jql", stringProp("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
-                            "maxResults", intProp("Maximum number of issues to return (default 50).")),
-                            List.of("jql"))),
-            tool("get_issue",
-                    "Get a single Jira issue by key, including its description.",
-                    schema(Map.of("key", stringProp("Issue key, e.g. SDD-1.")),
-                            List.of("key"))),
-            tool("create_issue",
-                    "Create a new Jira issue.",
-                    schema(Map.of(
-                            "projectKey", stringProp("Project key the issue belongs to, e.g. SDD."),
-                            "issueType", stringProp("Issue type name, e.g. Task, Bug, Story."),
-                            "summary", stringProp("Short summary / title of the issue."),
-                            "description", stringProp("Optional longer description (plain text).")),
-                            List.of("projectKey", "issueType", "summary"))),
-            tool("add_comment",
-                    "Add a comment to a Jira issue.",
-                    schema(Map.of(
-                            "key", stringProp("Issue key, e.g. SDD-1."),
-                            "body", stringProp("Comment text (plain text).")),
-                            List.of("key", "body"))),
-            tool("transition_issue",
-                    "Move a Jira issue to a new status (e.g. In Progress, Done).",
-                    schema(Map.of(
-                            "key", stringProp("Issue key, e.g. SDD-1."),
-                            "status", stringProp("Target status or transition name, e.g. \"In Progress\".")),
-                            List.of("key", "status"))));
-
     private final JiraClient jira;
 
     public McpHandler(JiraClient jira) {
@@ -88,7 +51,7 @@ public class McpHandler {
             return switch (method) {
                 case "initialize" -> rpcResult(id, initialize(request));
                 case "ping" -> rpcResult(id, Map.of());
-                case "tools/list" -> rpcResult(id, Map.of("tools", TOOLS));
+                case "tools/list" -> rpcResult(id, Map.of("tools", tools));
                 case "tools/call" -> rpcResult(id, callTool(request));
                 default -> rpcError(id, -32601, "Method not found: " + method);
             };
@@ -259,21 +222,4 @@ public class McpHandler {
         }
     }
 
-
-
-    private static Map<String, Object> tool(String name, String description, Map<String, Object> inputSchema) {
-        return Map.of("name", name, "description", description, "inputSchema", inputSchema);
-    }
-
-    private static Map<String, Object> schema(Map<String, Object> properties, List<String> required) {
-        return Map.of("type", "object", "properties", properties, "required", required);
-    }
-
-    private static Map<String, Object> stringProp(String description) {
-        return Map.of("type", "string", "description", description);
-    }
-
-    private static Map<String, Object> intProp(String description) {
-        return Map.of("type", "integer", "description", description);
-    }
 }
