@@ -200,6 +200,67 @@ public class McpHandler {
 
     // ---- Tool-descriptor builders ----
 
+    private static final List<Tool> tools = List.of(
+            new Tool("list_my_issues",
+                    "List Jira issues assigned to you, most recently updated first.",
+                    new Schema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+                            List.of())),
+            new Tool("search_issues",
+                    "Search Jira issues with a JQL query.",
+                    new Schema(Map.of(
+                                    "jql", PropertyDescription.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
+                                    "maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+                            List.of("jql"))),
+            new Tool("get_issue",
+                    "Get a single Jira issue by key, including its description.",
+                    new Schema(Map.of("key", PropertyDescription.string("Issue key, e.g. SDD-1.")),
+                            List.of("key"))),
+            new Tool("create_issue",
+                    "Create a new Jira issue.",
+                    new Schema(Map.of(
+                                    "projectKey", PropertyDescription.string("Project key the issue belongs to, e.g. SDD."),
+                                    "issueType", PropertyDescription.string("Issue type name, e.g. Task, Bug, Story."),
+                                    "summary", PropertyDescription.string("Short summary / title of the issue."),
+                                    "description", PropertyDescription.string("Optional longer description (plain text).")),
+                            List.of("projectKey", "issueType", "summary"))),
+            new Tool("add_comment",
+                    "Add a comment to a Jira issue.",
+                    new Schema(Map.of(
+                                    "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
+                                    "body", PropertyDescription.string("Comment text (plain text).")),
+                            List.of("key", "body"))),
+            new Tool("transition_issue",
+                    "Move a Jira issue to a new status (e.g. In Progress, Done).",
+                    new Schema(Map.of(
+                                    "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
+                                    "status", PropertyDescription.string("Target status or transition name, e.g. \"In Progress\".")),
+                            List.of("key", "status"))));
+
+
+
+    private record Tool(String name, String description, Schema schema) {}
+    private record Schema(String type, Map<String, PropertyDescription> properties, List<String> required) {
+        Schema(Map<String, PropertyDescription> properties, List<String> required) {
+            this(ToolSchemaType.OBJECT.type, properties, required);
+        }
+    }
+    private record PropertyDescription(String type, String description) {
+        static PropertyDescription string(String description) {
+            return new PropertyDescription(ToolSchemaType.STRING.type, description);
+        }
+        static PropertyDescription integer(String description) {
+            return new PropertyDescription(ToolSchemaType.INTEGER.type, description);
+        }
+    }
+    private enum ToolSchemaType { OBJECT("object"), STRING("string"), INTEGER("integer");
+        String type;
+        ToolSchemaType(String type) {
+            this.type = type;
+        }
+    }
+
+
+
     private static Map<String, Object> tool(String name, String description, Map<String, Object> inputSchema) {
         return Map.of("name", name, "description", description, "inputSchema", inputSchema);
     }
