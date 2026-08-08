@@ -164,22 +164,22 @@ public class McpHandler {
 
     // ---- Tool-descriptor builders ----
 
-    private static final List<Tool> tools = List.of(
-            new Tool("list_my_issues",
+    private static final List<ToolDefinition> tools = List.of(
+            new ToolDefinition("list_my_issues",
                     "List Jira issues assigned to you, most recently updated first.",
                     new InputSchema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
                             List.of())),
-            new Tool("search_issues",
+            new ToolDefinition("search_issues",
                     "Search Jira issues with a JQL query.",
                     new InputSchema(Map.of(
                                     "jql", PropertyDescription.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
                                     "maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
                             List.of("jql"))),
-            new Tool("get_issue",
+            new ToolDefinition("get_issue",
                     "Get a single Jira issue by key, including its description.",
                     new InputSchema(Map.of("key", PropertyDescription.string("Issue key, e.g. SDD-1.")),
                             List.of("key"))),
-            new Tool("create_issue",
+            new ToolDefinition("create_issue",
                     "Create a new Jira issue.",
                     new InputSchema(Map.of(
                                     "projectKey", PropertyDescription.string("Project key the issue belongs to, e.g. SDD."),
@@ -187,13 +187,13 @@ public class McpHandler {
                                     "summary", PropertyDescription.string("Short summary / title of the issue."),
                                     "description", PropertyDescription.string("Optional longer description (plain text).")),
                             List.of("projectKey", "issueType", "summary"))),
-            new Tool("add_comment",
+            new ToolDefinition("add_comment",
                     "Add a comment to a Jira issue.",
                     new InputSchema(Map.of(
                                     "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
                                     "body", PropertyDescription.string("Comment text (plain text).")),
                             List.of("key", "body"))),
-            new Tool("transition_issue",
+            new ToolDefinition("transition_issue",
                     "Move a Jira issue to a new status (e.g. In Progress, Done).",
                     new InputSchema(Map.of(
                                     "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
@@ -204,9 +204,9 @@ public class McpHandler {
 
 
     //@JsonInclude(JsonInclude.Include.NON_NULL)
-    private record Tool(String name, String title, String description, InputSchema inputSchema,
+    public record ToolDefinition(String name, String title, String description, InputSchema inputSchema,
                         Annotations annotations) {
-        Tool(String name, String description, InputSchema inputSchema) {
+        ToolDefinition(String name, String description, InputSchema inputSchema) {
             this(name, null, description, inputSchema, null);
         }
     }
