@@ -47,18 +47,29 @@ public class JiraClient {
 
     // ---- Tool operations (return formatted text ready for an MCP text result) ----
 
+    /** One row of a search result, for tools that expose structured output. */
+    public record IssueSummary(String key, String status, String priority, String summary) {}
+
     /** Issues assigned to the token's user, most recently updated first. */
     public String listMyIssues(int maxResults) {
         return searchIssues(MY_ISSUES_JQL, maxResults);
     }
 
+    /** As {@link #listMyIssues}, but structured — one HTTP call, caller formats as needed. */
+    public List<IssueSummary> myIssueSummaries(int maxResults) {
+        return toSummaries(getJson(searchUrl(MY_ISSUES_JQL, maxResults)));
+    }
+
     /** Arbitrary JQL search, formatted as one compact row per issue. */
     public String searchIssues(String jql, int maxResults) {
-        String url = baseUrl + "/search/jql"
+        return formatSummaries(toSummaries(getJson(searchUrl(jql, maxResults))));
+    }
+
+    private String searchUrl(String jql, int maxResults) {
+        return baseUrl + "/search/jql"
                 + "?jql=" + HttpUtils.urlEncode(jql)
                 + "&fields=" + HttpUtils.urlEncode(SEARCH_FIELDS)
                 + "&maxResults=" + maxResults;
-        return formatIssues(getJson(url));
     }
 
     /** A single issue by key, with its description flattened from ADF to text. */
@@ -163,19 +174,27 @@ public class JiraClient {
 
     // ---- Formatting (ports of jira-fmt.py) ----
 
-    private String formatIssues(Map<String, Object> data) {
-        List<Map<String, Object>> issues = asList(data.get("issues"));
-        if (issues.isEmpty()) {
-            return "No issues.";
-        }
-        List<String> rows = new ArrayList<>();
-        for (Map<String, Object> issue : issues) {
+    private List<IssueSummary> toSummaries(Map<String, Object> data) {
+        List<IssueSummary> summaries = new ArrayList<>();
+        for (Map<String, Object> issue : asList(data.get("issues"))) {
             Map<String, Object> f = JsonUtils.getNestedMap(issue, "fields");
-            rows.add(String.join("\t",
+            summaries.add(new IssueSummary(
                     str(issue.getOrDefault("key", "?")),
                     orDefault(JsonUtils.getNestedField(f, "status", "name"), "?"),
                     orDefault(JsonUtils.getNestedField(f, "priority", "name"), "-"),
                     orDefault(JsonUtils.getNestedField(f, "summary"), "")));
+        }
+        return summaries;
+    }
+
+    /** One tab-separated row per issue, as {@code jira-fmt.py} prints them. */
+    public static String formatSummaries(List<IssueSummary> issues) {
+        if (issues.isEmpty()) {
+            return "No issues.";
+        }
+        List<String> rows = new ArrayList<>();
+        for (IssueSummary i : issues) {
+            rows.add(String.join("\t", i.key(), i.status(), i.priority(), i.summary()));
         }
         return String.join("\n", rows);
     }
