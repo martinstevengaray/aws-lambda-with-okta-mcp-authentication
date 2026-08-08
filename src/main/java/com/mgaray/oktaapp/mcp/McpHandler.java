@@ -23,7 +23,7 @@ public class McpHandler {
 
     private static final String DEFAULT_PROTOCOL_VERSION = "2025-06-18";
 
-    // Tool descriptors advertised by tools/list, with JSON Schema for arguments.
+    // Tool descriptors advertised by tools/list, with JSON InputSchema for arguments.
     private static final List<Map<String, Object>> TOOLS = List.of(
             tool("list_my_issues",
                     "List Jira issues assigned to you, most recently updated first.",
@@ -203,21 +203,21 @@ public class McpHandler {
     private static final List<Tool> tools = List.of(
             new Tool("list_my_issues",
                     "List Jira issues assigned to you, most recently updated first.",
-                    new Schema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+                    new InputSchema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
                             List.of())),
             new Tool("search_issues",
                     "Search Jira issues with a JQL query.",
-                    new Schema(Map.of(
+                    new InputSchema(Map.of(
                                     "jql", PropertyDescription.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
                                     "maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
                             List.of("jql"))),
             new Tool("get_issue",
                     "Get a single Jira issue by key, including its description.",
-                    new Schema(Map.of("key", PropertyDescription.string("Issue key, e.g. SDD-1.")),
+                    new InputSchema(Map.of("key", PropertyDescription.string("Issue key, e.g. SDD-1.")),
                             List.of("key"))),
             new Tool("create_issue",
                     "Create a new Jira issue.",
-                    new Schema(Map.of(
+                    new InputSchema(Map.of(
                                     "projectKey", PropertyDescription.string("Project key the issue belongs to, e.g. SDD."),
                                     "issueType", PropertyDescription.string("Issue type name, e.g. Task, Bug, Story."),
                                     "summary", PropertyDescription.string("Short summary / title of the issue."),
@@ -225,22 +225,22 @@ public class McpHandler {
                             List.of("projectKey", "issueType", "summary"))),
             new Tool("add_comment",
                     "Add a comment to a Jira issue.",
-                    new Schema(Map.of(
+                    new InputSchema(Map.of(
                                     "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
                                     "body", PropertyDescription.string("Comment text (plain text).")),
                             List.of("key", "body"))),
             new Tool("transition_issue",
                     "Move a Jira issue to a new status (e.g. In Progress, Done).",
-                    new Schema(Map.of(
+                    new InputSchema(Map.of(
                                     "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
                                     "status", PropertyDescription.string("Target status or transition name, e.g. \"In Progress\".")),
                             List.of("key", "status"))));
 
 
 
-    private record Tool(String name, String description, Schema schema) {}
-    private record Schema(String type, Map<String, PropertyDescription> properties, List<String> required) {
-        Schema(Map<String, PropertyDescription> properties, List<String> required) {
+    private record Tool(String name, String description, InputSchema inputSchema) {}
+    private record InputSchema(String type, Map<String, PropertyDescription> properties, List<String> required) {
+        InputSchema(Map<String, PropertyDescription> properties, List<String> required) {
             this(ToolSchemaType.OBJECT.type, properties, required);
         }
     }
