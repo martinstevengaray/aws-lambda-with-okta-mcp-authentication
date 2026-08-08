@@ -1,5 +1,6 @@
 package com.mgaray.oktaapp.mcp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
@@ -201,25 +202,35 @@ public class McpHandler {
 
 
 
-    private record Tool(String name, String description, InputSchema inputSchema) {}
+
+    //@JsonInclude(JsonInclude.Include.NON_NULL)
+    private record Tool(String name, String title, String description, InputSchema inputSchema,
+                        Annotations annotations) {
+        Tool(String name, String description, InputSchema inputSchema) {
+            this(name, null, description, inputSchema, null);
+        }
+    }
+
+
+    //@JsonInclude(JsonInclude.Include.NON_NULL)
+    private record Annotations(String title, Boolean readOnlyHint, Boolean destructiveHint,
+                               Boolean idempotentHint, Boolean openWorldHint) {}
+
     private record InputSchema(String type, Map<String, PropertyDescription> properties, List<String> required) {
         InputSchema(Map<String, PropertyDescription> properties, List<String> required) {
-            this(ToolSchemaType.OBJECT.type, properties, required);
+            this(objectType, properties, required);
         }
     }
     private record PropertyDescription(String type, String description) {
         static PropertyDescription string(String description) {
-            return new PropertyDescription(ToolSchemaType.STRING.type, description);
+            return new PropertyDescription(stringType, description);
         }
         static PropertyDescription integer(String description) {
-            return new PropertyDescription(ToolSchemaType.INTEGER.type, description);
+            return new PropertyDescription(integerType, description);
         }
     }
-    private enum ToolSchemaType { OBJECT("object"), STRING("string"), INTEGER("integer");
-        String type;
-        ToolSchemaType(String type) {
-            this.type = type;
-        }
-    }
+    private static final String objectType = "object";
+    private static final String stringType = "string";
+    private static final String integerType = "integer";
 
 }
