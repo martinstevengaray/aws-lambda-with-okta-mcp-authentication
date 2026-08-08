@@ -34,15 +34,11 @@ class AuthenticationHandlerWeb {
     private final HttpClient httpClient;
     private final SecureRandom secureRandom;
 
-    AuthenticationHandlerWeb(String oktaIssuer,
-                                    String oktaWebClientId,
-                                    String oktaWebClientSecret,
-                                    String oktaScopes,
-                                    AccessTokenVerifier verifier) {
-        this.oktaIssuer = oktaIssuer;
-        this.oktaWebClientId = oktaWebClientId;
-        this.oktaWebClientSecret = oktaWebClientSecret;
-        this.oktaScopes = oktaScopes;
+    AuthenticationHandlerWeb(OktaConfig config, AccessTokenVerifier verifier) {
+        this.oktaIssuer = config.issuer();
+        this.oktaWebClientId = config.webClientId();
+        this.oktaWebClientSecret = config.webClientSecret();
+        this.oktaScopes = config.scopes();
         this.verifier = verifier;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
@@ -135,6 +131,21 @@ class AuthenticationHandlerWeb {
         return HttpUtils.response(302, Map.of("location", originallyRequestedUrl), "", List.of(
                 OKTA_TOKEN_COOKIE + "=" + accessToken + "; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=" + maxAge,
                 OAUTH_STATE_COOKIE + "=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0")); //clear out oath cookie
+    }
+
+    // Signs the user out of this app alone by dropping the session cookie. The token itself is not
+    // revoked at Okta: this app verifies JWTs offline, so revocation would not stop a leaked copy from
+    // being replayed here anyway — only the cookie's absence ends the session. The Okta session is
+    // deliberately left intact, so other Okta apps are unaffected. Answers with a page rather than a
+    // redirect to "/", which would bounce back through /v1/authorize and silently sign the user in again.
+    Map<String, Object> handleLogout() {
+        // Says nothing about the Okta session: it may or may not still be live (the user may well have
+        // signed out of Okta first), and this app has no way to tell.
+        String body = "<!DOCTYPE html><html><body><h1>Signed out</h1>"
+                + "<p>Your session with this app has ended.</p>"
+                + "<p><a href=\"/\">Sign in again</a></p></body></html>";
+        return HttpUtils.response(200, Map.of("content-type", "text/html; charset=utf-8"), body,
+                List.of(OKTA_TOKEN_COOKIE + "=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0"));
     }
 
     private static byte[] sha256(String value) {

@@ -9,6 +9,7 @@ import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.McpHandler;
+import com.mgaray.oktaapp.auth.OktaConfig;
 import com.mgaray.oktaapp.auth.OktaDelegate;
 import com.mgaray.oktaapp.web.WebHandler;
 import com.okta.jwt.Jwt;
@@ -38,8 +39,8 @@ public class McpServerLambda implements RequestHandler<Map<String, Object>, Map<
         // parties — currently the MCP OAuth proxy's authorization `state`.
         String symmetricSigningKey = AwsServicesDelegate.fetchSmmParameterValue(
                 System.getenv("SYMMETRIC_SIGNING_KEY_SSM_PARAMETER_KEY"));
-        this.oktaDelegate = new OktaDelegate(oktaIssuer, oktaAudience, oktaWebClientId, oktaWebClientSecret, oktaScopes,
-                oktaMcpClientId, symmetricSigningKey);
+        this.oktaDelegate = new OktaDelegate(new OktaConfig(oktaIssuer, oktaAudience, oktaWebClientId,
+                oktaWebClientSecret, oktaScopes, oktaMcpClientId, symmetricSigningKey));
         String jiraEmail = System.getenv("JIRA_CLIENT_EMAIL");
         String jiraCloudId = System.getenv("JIRA_CLOUD_ID");
         String jiraToken = AwsServicesDelegate.fetchSmmParameterValue(System.getenv("JIRA_CLIENT_TOKEN_SSM_PARAMETER_KEY"));
