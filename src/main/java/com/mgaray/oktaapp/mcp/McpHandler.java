@@ -1,10 +1,15 @@
 package com.mgaray.oktaapp.mcp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.mgaray.oktaapp.mcp.Models.PropertyDescription;
+import com.mgaray.oktaapp.mcp.Models.InputSchema;
+import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.jira.JiraException;
+import com.mgaray.oktaapp.mcp.tools.ITool;
+import com.mgaray.oktaapp.mcp.tools.ListMyIssuesTool;
 import com.okta.jwt.Jwt;
 
 import java.nio.charset.StandardCharsets;
@@ -25,9 +30,11 @@ public class McpHandler {
     private static final String DEFAULT_PROTOCOL_VERSION = "2025-06-18";
 
     private final JiraClient jira;
+    private final ITool listMyIssuesTool;
 
     public McpHandler(JiraClient jira) {
         this.jira = jira;
+        this.listMyIssuesTool = new ListMyIssuesTool(jira);
     }
 
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
@@ -73,8 +80,11 @@ public class McpHandler {
         String name = JsonUtils.getNestedField(request, "params", "name");
         Map<String, Object> args = JsonUtils.getNestedMap(request, "params", "arguments");
         try {
+            if ("list_my_issues".equals(name)) {
+                return listMyIssuesTool.callTool(args);
+            }
             String text = switch (name == null ? "" : name) {
-                case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
+                //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
                 case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
                 case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
                 case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
@@ -165,10 +175,11 @@ public class McpHandler {
     // ---- Tool-descriptor builders ----
 
     private static final List<ToolDefinition> tools = List.of(
-            new ToolDefinition("list_my_issues",
-                    "List Jira issues assigned to you, most recently updated first.",
-                    new InputSchema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
-                            List.of())),
+            ListMyIssuesTool.toolDefinition,
+//            new ToolDefinition("list_my_issues",
+//                    "List Jira issues assigned to you, most recently updated first.",
+//                    new InputSchema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+//                            List.of())),
             new ToolDefinition("search_issues",
                     "Search Jira issues with a JQL query.",
                     new InputSchema(Map.of(
@@ -203,34 +214,5 @@ public class McpHandler {
 
 
 
-    //@JsonInclude(JsonInclude.Include.NON_NULL)
-    public record ToolDefinition(String name, String title, String description, InputSchema inputSchema,
-                        Annotations annotations) {
-        ToolDefinition(String name, String description, InputSchema inputSchema) {
-            this(name, null, description, inputSchema, null);
-        }
-    }
-
-
-    //@JsonInclude(JsonInclude.Include.NON_NULL)
-    private record Annotations(String title, Boolean readOnlyHint, Boolean destructiveHint,
-                               Boolean idempotentHint, Boolean openWorldHint) {}
-
-    private record InputSchema(String type, Map<String, PropertyDescription> properties, List<String> required) {
-        InputSchema(Map<String, PropertyDescription> properties, List<String> required) {
-            this(objectType, properties, required);
-        }
-    }
-    private record PropertyDescription(String type, String description) {
-        static PropertyDescription string(String description) {
-            return new PropertyDescription(stringType, description);
-        }
-        static PropertyDescription integer(String description) {
-            return new PropertyDescription(integerType, description);
-        }
-    }
-    private static final String objectType = "object";
-    private static final String stringType = "string";
-    private static final String integerType = "integer";
 
 }
