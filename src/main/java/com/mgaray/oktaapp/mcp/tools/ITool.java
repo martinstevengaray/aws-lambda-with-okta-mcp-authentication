@@ -30,8 +30,8 @@ public interface ITool {
     }
 
     /** For arguments absent from the schema's required list; null when not supplied. */
-    static String getOptionalString(Map<String, Object> args, String key) {
-        return args.get(key) instanceof String s ? s : null;
+    static String getString(Map<String, Object> args, String key, String fallback) {
+        return args.get(key) instanceof String s ? s : fallback;
     }
 
     /**
