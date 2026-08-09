@@ -1,8 +1,8 @@
 package com.mgaray.oktaapp.mcp.tools;
 
+import com.mgaray.oktaapp.mcp.Models;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
-import com.mgaray.oktaapp.mcp.Models.InputSchema;
-import com.mgaray.oktaapp.mcp.Models.PropertyDescription;
+import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 
 import java.util.List;
@@ -15,24 +15,24 @@ public class ListMyIssuesTool implements ITool {
      * required because {@link JiraClient#myIssueSummaries} substitutes a placeholder
      * ("?", "-", "") rather than omitting a field Jira didn't return.
      */
-    private static final PropertyDescription ISSUE = PropertyDescription.object(
+    private static final JsonSchema ISSUE = Models.JsonSchema.object(
             "A single Jira issue.",
             Map.of(
-                    "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
-                    "status", PropertyDescription.string("Current workflow status, e.g. In Progress."),
-                    "priority", PropertyDescription.string("Priority name, or \"-\" if unset."),
-                    "summary", PropertyDescription.string("Short summary / title of the issue.")),
+                    "key", JsonSchema.string("Issue key, e.g. SDD-1."),
+                    "status", JsonSchema.string("Current workflow status, e.g. In Progress."),
+                    "priority", JsonSchema.string("Priority name, or \"-\" if unset."),
+                    "summary", JsonSchema.string("Short summary / title of the issue.")),
             List.of("key", "status", "priority", "summary"));
 
     public static final ToolDefinition toolDefinition = new ToolDefinition(
     "list_my_issues",
 "List Jira issues assigned to you, most recently updated first.",
-            new InputSchema(Map.of(
-                "maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+            JsonSchema.object(Map.of(
+                "maxResults", Models.JsonSchema.integer("Maximum number of issues to return (default 50).")),
             List.of()),
             // An outputSchema root must be an object, so the array is wrapped in "issues".
-            new InputSchema(Map.of(
-                "issues", PropertyDescription.array("The issues assigned to you, most recently updated first.", ISSUE)),
+            JsonSchema.object(Map.of(
+                "issues", Models.JsonSchema.array("The issues assigned to you, most recently updated first.", ISSUE)),
             List.of("issues")));
 
     private final JiraClient jiraClient;

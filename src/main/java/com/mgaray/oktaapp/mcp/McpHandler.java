@@ -1,8 +1,6 @@
 package com.mgaray.oktaapp.mcp;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.mgaray.oktaapp.mcp.Models.PropertyDescription;
-import com.mgaray.oktaapp.mcp.Models.InputSchema;
+import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
@@ -178,37 +176,37 @@ public class McpHandler {
             ListMyIssuesTool.toolDefinition,
 //            new ToolDefinition("list_my_issues",
 //                    "List Jira issues assigned to you, most recently updated first.",
-//                    new InputSchema(Map.of("maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+//                    JsonSchema.object(Map.of("maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
 //                            List.of())),
             new ToolDefinition("search_issues",
                     "Search Jira issues with a JQL query.",
-                    new InputSchema(Map.of(
-                                    "jql", PropertyDescription.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
-                                    "maxResults", PropertyDescription.integer("Maximum number of issues to return (default 50).")),
+                    JsonSchema.object(Map.of(
+                                    "jql", JsonSchema.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
+                                    "maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
                             List.of("jql"))),
             new ToolDefinition("get_issue",
                     "Get a single Jira issue by key, including its description.",
-                    new InputSchema(Map.of("key", PropertyDescription.string("Issue key, e.g. SDD-1.")),
+                    JsonSchema.object(Map.of("key", JsonSchema.string("Issue key, e.g. SDD-1.")),
                             List.of("key"))),
             new ToolDefinition("create_issue",
                     "Create a new Jira issue.",
-                    new InputSchema(Map.of(
-                                    "projectKey", PropertyDescription.string("Project key the issue belongs to, e.g. SDD."),
-                                    "issueType", PropertyDescription.string("Issue type name, e.g. Task, Bug, Story."),
-                                    "summary", PropertyDescription.string("Short summary / title of the issue."),
-                                    "description", PropertyDescription.string("Optional longer description (plain text).")),
+                    JsonSchema.object(Map.of(
+                                    "projectKey", JsonSchema.string("Project key the issue belongs to, e.g. SDD."),
+                                    "issueType", JsonSchema.string("Issue type name, e.g. Task, Bug, Story."),
+                                    "summary", JsonSchema.string("Short summary / title of the issue."),
+                                    "description", JsonSchema.string("Optional longer description (plain text).")),
                             List.of("projectKey", "issueType", "summary"))),
             new ToolDefinition("add_comment",
                     "Add a comment to a Jira issue.",
-                    new InputSchema(Map.of(
-                                    "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
-                                    "body", PropertyDescription.string("Comment text (plain text).")),
+                    JsonSchema.object(Map.of(
+                                    "key", JsonSchema.string("Issue key, e.g. SDD-1."),
+                                    "body", JsonSchema.string("Comment text (plain text).")),
                             List.of("key", "body"))),
             new ToolDefinition("transition_issue",
                     "Move a Jira issue to a new status (e.g. In Progress, Done).",
-                    new InputSchema(Map.of(
-                                    "key", PropertyDescription.string("Issue key, e.g. SDD-1."),
-                                    "status", PropertyDescription.string("Target status or transition name, e.g. \"In Progress\".")),
+                    JsonSchema.object(Map.of(
+                                    "key", JsonSchema.string("Issue key, e.g. SDD-1."),
+                                    "status", JsonSchema.string("Target status or transition name, e.g. \"In Progress\".")),
                             List.of("key", "status"))));
 
 
