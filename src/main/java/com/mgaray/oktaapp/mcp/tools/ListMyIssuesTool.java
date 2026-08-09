@@ -36,4 +36,11 @@ public class ListMyIssuesTool implements ITool {
         List<JiraClient.IssueSummary> issues = jiraClient.myIssueSummaries(maxResults);
         return ITool.structuredResult(Map.of("issues", issues));
     }
+
+    /*
+    int maxResults = 50;
+        try {
+            maxResults = (int)Double.parseDouble(args.get("maxResults").toString()); //parseDouble so 5.0 is acceptable
+        } catch(Exception ignored) {} //do nothing keep defaults
+     */
 }
