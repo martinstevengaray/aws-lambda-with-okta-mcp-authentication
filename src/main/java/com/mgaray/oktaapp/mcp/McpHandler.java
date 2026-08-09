@@ -94,7 +94,7 @@ public class McpHandler {
             String text = switch (name == null ? "" : name) {
                 //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
                 //case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
-                ///case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
+                //case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
                 case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
                         requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
                 case "add_comment" -> jira.addComment(requiredArg(args, "key"), requiredArg(args, "body"));
