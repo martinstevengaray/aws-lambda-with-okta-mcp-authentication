@@ -57,7 +57,12 @@ public class JiraClient {
 
     /** As {@link #listMyIssues}, but structured — one HTTP call, caller formats as needed. */
     public List<IssueSummary> myIssueSummaries(int maxResults) {
-        return toSummaries(getJson(searchUrl(MY_ISSUES_JQL, maxResults)));
+        return searchIssueSummaries(MY_ISSUES_JQL, maxResults);
+    }
+
+    /** As {@link #searchIssues}, but structured. */
+    public List<IssueSummary> searchIssueSummaries(String jql, int maxResults) {
+        return toSummaries(getJson(searchUrl(jql, maxResults)));
     }
 
     /** Arbitrary JQL search, formatted as one compact row per issue. */

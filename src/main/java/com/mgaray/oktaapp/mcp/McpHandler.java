@@ -8,6 +8,7 @@ import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.jira.JiraException;
 import com.mgaray.oktaapp.mcp.tools.ITool;
 import com.mgaray.oktaapp.mcp.tools.ListMyIssuesTool;
+import com.mgaray.oktaapp.mcp.tools.SearchIssuesTool;
 import com.okta.jwt.Jwt;
 
 import java.nio.charset.StandardCharsets;
@@ -29,10 +30,12 @@ public class McpHandler {
 
     private final JiraClient jira;
     private final ITool listMyIssuesTool;
+    private final ITool searchIssuesTool;
 
     public McpHandler(JiraClient jira) {
         this.jira = jira;
         this.listMyIssuesTool = new ListMyIssuesTool(jira);
+        this.searchIssuesTool = new SearchIssuesTool(jira);
     }
 
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
@@ -78,12 +81,15 @@ public class McpHandler {
         String name = JsonUtils.getNestedField(request, "params", "name");
         Map<String, Object> args = JsonUtils.getNestedMap(request, "params", "arguments");
         try {
-            switch(name) {
-                case "list_my_issues" : return listMyIssuesTool.callTool(args);
+            // Tools with their own class return a full result (text + structuredContent);
+            // the rest still return a bare string that is wrapped below.
+            switch (name == null ? "" : name) {
+                case "list_my_issues": return listMyIssuesTool.callTool(args);
+                case "search_issues": return searchIssuesTool.callTool(args);
             }
             String text = switch (name == null ? "" : name) {
                 //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
-                case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
+                //case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
                 case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
                 case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
                         requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
@@ -174,16 +180,7 @@ public class McpHandler {
 
     private static final List<ToolDefinition> tools = List.of(
             ListMyIssuesTool.toolDefinition,
-//            new ToolDefinition("list_my_issues",
-//                    "List Jira issues assigned to you, most recently updated first.",
-//                    JsonSchema.object(Map.of("maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
-//                            List.of())),
-            new ToolDefinition("search_issues",
-                    "Search Jira issues with a JQL query.",
-                    JsonSchema.object(Map.of(
-                                    "jql", JsonSchema.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
-                                    "maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
-                            List.of("jql"))),
+            SearchIssuesTool.toolDefinition,
             new ToolDefinition("get_issue",
                     "Get a single Jira issue by key, including its description.",
                     JsonSchema.object(Map.of("key", JsonSchema.string("Issue key, e.g. SDD-1.")),

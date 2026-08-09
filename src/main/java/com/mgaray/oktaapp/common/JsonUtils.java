@@ -43,7 +43,7 @@ public class JsonUtils {
                 objectMap = (Map<String, Object>) objectMap.get(path[i]);
             }
             return (T) objectMap.get(path[path.length - 1]);
-        } catch (ClassCastException | NullPointerException e) {
+        } catch (ClassCastException | NullPointerException e) { //todo: recall, type cast to (T) would not be caught here
             return null; //key not available on objectMap
         }
     }

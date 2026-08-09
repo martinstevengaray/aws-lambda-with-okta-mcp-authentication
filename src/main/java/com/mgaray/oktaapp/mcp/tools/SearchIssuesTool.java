@@ -7,21 +7,23 @@ import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import java.util.List;
 import java.util.Map;
 
-public class ListMyIssuesTool implements ITool {
+public class SearchIssuesTool implements ITool {
 
     private static final int DEFAULT_MAX_RESULTS = 50;
 
     public static final ToolDefinition toolDefinition = new ToolDefinition(
-            "list_my_issues",
-            "List Jira issues assigned to you, most recently updated first.",
+            "search_issues",
+            "Search Jira issues with a JQL query.",
             JsonSchema.object(
-                    Map.of("maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
-                    List.of()),
-            JiraSchemas.issuesOutput("The issues assigned to you, most recently updated first."));
+                    Map.of(
+                            "jql", JsonSchema.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
+                            "maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
+                    List.of("jql")),
+            JiraSchemas.issuesOutput("The issues matching the query."));
 
     private final JiraClient jiraClient;
 
-    public ListMyIssuesTool(JiraClient jiraClient) {
+    public SearchIssuesTool(JiraClient jiraClient) {
         this.jiraClient = jiraClient;
     }
 
@@ -32,8 +34,9 @@ public class ListMyIssuesTool implements ITool {
 
     @Override
     public Map<String, Object> callTool(Map<String, Object> args) {
+        String jql = ITool.requiredArg(args, "jql");
         int maxResults = ITool.intArg(args, "maxResults", DEFAULT_MAX_RESULTS);
-        List<JiraClient.IssueSummary> issues = jiraClient.myIssueSummaries(maxResults);
+        List<JiraClient.IssueSummary> issues = jiraClient.searchIssueSummaries(jql, maxResults);
         return ITool.structuredResult(Map.of("issues", issues));
     }
 }
