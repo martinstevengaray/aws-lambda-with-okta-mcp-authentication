@@ -33,12 +33,13 @@ public final class JiraSchemas {
         return JsonSchema.object(
                 Map.of(
                         "key", JsonSchema.string("Issue key, e.g. SDD-1."),
-                        "summary", JsonSchema.string("Short summary / title of the issue."),
                         "status", JsonSchema.string("Current workflow status, e.g. In Progress."),
+                        "priority", JsonSchema.string("Priority name, or \"-\" if unset."),
+                        "summary", JsonSchema.string("Short summary / title of the issue."),
                         "assignee", JsonSchema.string("Display name of the assignee, or \"Unassigned\"."),
                         "description", JsonSchema.string(
                                 "Issue description as plain text, flattened from Atlassian Document Format."
                                         + " Empty string when the issue has no description.")),
-                List.of("key", "summary", "status", "assignee", "description"));
+                List.of("key", "status", "priority", "summary", "assignee", "description"));
     }
 }

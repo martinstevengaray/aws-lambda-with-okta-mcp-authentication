@@ -25,7 +25,7 @@ public class JiraClient {
 
     // Field sets mirror the jira skill's list-my-tasks.sh / get-issue.sh scripts.
     private static final String SEARCH_FIELDS = "summary,status,priority,issuetype,project,description";
-    private static final String ISSUE_FIELDS = "summary,status,assignee,description";
+    private static final String ISSUE_FIELDS = "summary,status,priority,assignee,description";
     private static final String MY_ISSUES_JQL = "assignee = currentUser() ORDER BY updated DESC";
 
     // Block-level ADF nodes after which jira-fmt.py inserts a line break.
@@ -78,7 +78,8 @@ public class JiraClient {
     }
 
     /** A single issue, with its description already flattened from ADF to plain text. */
-    public record IssueDetail(String key, String summary, String status, String assignee, String description) {}
+    public record IssueDetail(String key, String summary, String status, String priority,
+                              String assignee, String description) {}
 
     /** A single issue by key, with its description flattened from ADF to text. */
     public String getIssue(String key) {
@@ -218,6 +219,7 @@ public class JiraClient {
                 orDefault(JsonUtils.getNestedField(data, "key"), "?"),
                 orDefault(JsonUtils.getNestedField(f, "summary"), ""),
                 orDefault(JsonUtils.getNestedField(f, "status", "name"), "?"),
+                orDefault(JsonUtils.getNestedField(f, "priority", "name"), "-"),
                 orDefault(JsonUtils.getNestedField(f, "assignee", "displayName"), "Unassigned"),
                 adfToText(f.get("description")).strip());
     }
@@ -227,6 +229,7 @@ public class JiraClient {
         return String.join("\n",
                 i.key() + "  " + i.summary(),
                 "Status:   " + i.status(),
+                "Priority: " + i.priority(),
                 "Assignee: " + i.assignee(),
                 "",
                 i.description().isEmpty() ? "(no description)" : i.description());
