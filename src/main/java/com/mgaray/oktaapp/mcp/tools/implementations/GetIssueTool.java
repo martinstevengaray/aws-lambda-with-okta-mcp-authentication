@@ -17,7 +17,7 @@ public class GetIssueTool implements ITool {
             JsonSchema.object(
                     Map.of("key", JsonSchema.string("Issue key, e.g. SDD-1.")),
                     List.of("key")),
-            JiraSchemas.createJiraIssueDetailOutputSchema());
+            JiraSchemas.getJiraIssueDetailOutputSchema());
 
     private final JiraClient jiraClient;
 

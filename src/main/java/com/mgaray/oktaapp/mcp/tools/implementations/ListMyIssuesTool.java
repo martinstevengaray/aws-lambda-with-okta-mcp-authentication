@@ -19,7 +19,7 @@ public class ListMyIssuesTool implements ITool {
             JsonSchema.object(
                     Map.of("maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
                     List.of()),
-            JiraSchemas.createJiraIssuesOutputSchema("The issues assigned to you, most recently updated first."));
+            JiraSchemas.listAndSearchJiraIssuesOutputSchema("The issues assigned to you, most recently updated first."));
 
     private final JiraClient jiraClient;
 

@@ -21,7 +21,7 @@ public class SearchIssuesTool implements ITool {
                             "jql", JsonSchema.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
                             "maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
                     List.of("jql")),
-            JiraSchemas.createJiraIssuesOutputSchema("The issues matching the query."));
+            JiraSchemas.listAndSearchJiraIssuesOutputSchema("The issues matching the query."));
 
     private final JiraClient jiraClient;
 

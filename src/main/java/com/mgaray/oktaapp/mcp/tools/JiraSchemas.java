@@ -18,7 +18,7 @@ public final class JiraSchemas {
                     "summary", JsonSchema.string("Short summary / title of the issue.")),
             List.of("key", "status", "priority", "summary"));
 
-    public static JsonSchema createJiraIssuesOutputSchema(String description) {
+    public static JsonSchema listAndSearchJiraIssuesOutputSchema(String description) {
         return JsonSchema.object(
                 Map.of("issues", JsonSchema.array(description, JIRA_ISSUE_SCHEMA)),
                 List.of("issues"));
@@ -29,7 +29,7 @@ public final class JiraSchemas {
      * unlike the list tools, the result is already an object, which is what an
      * outputSchema root must be.
      */
-    public static JsonSchema createJiraIssueDetailOutputSchema() {
+    public static JsonSchema getJiraIssueDetailOutputSchema() {
         return JsonSchema.object(
                 Map.of(
                         "key", JsonSchema.string("Issue key, e.g. SDD-1."),
