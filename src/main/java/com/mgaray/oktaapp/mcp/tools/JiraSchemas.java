@@ -23,4 +23,22 @@ public final class JiraSchemas {
                 Map.of("issues", JsonSchema.array(description, JIRA_ISSUE_SCHEMA)),
                 List.of("issues"));
     }
+
+    /**
+     * A single issue with its description. No wrapper property is needed here —
+     * unlike the list tools, the result is already an object, which is what an
+     * outputSchema root must be.
+     */
+    public static JsonSchema createJiraIssueDetailOutputSchema() {
+        return JsonSchema.object(
+                Map.of(
+                        "key", JsonSchema.string("Issue key, e.g. SDD-1."),
+                        "summary", JsonSchema.string("Short summary / title of the issue."),
+                        "status", JsonSchema.string("Current workflow status, e.g. In Progress."),
+                        "assignee", JsonSchema.string("Display name of the assignee, or \"Unassigned\"."),
+                        "description", JsonSchema.string(
+                                "Issue description as plain text, flattened from Atlassian Document Format."
+                                        + " Empty string when the issue has no description.")),
+                List.of("key", "summary", "status", "assignee", "description"));
+    }
 }

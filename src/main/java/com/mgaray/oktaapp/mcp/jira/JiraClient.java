@@ -77,11 +77,19 @@ public class JiraClient {
                 + "&maxResults=" + maxResults;
     }
 
+    /** A single issue, with its description already flattened from ADF to plain text. */
+    public record IssueDetail(String key, String summary, String status, String assignee, String description) {}
+
     /** A single issue by key, with its description flattened from ADF to text. */
     public String getIssue(String key) {
+        return formatIssue(issueDetail(key));
+    }
+
+    /** As {@link #getIssue}, but structured. */
+    public IssueDetail issueDetail(String key) {
         String url = baseUrl + "/issue/" + HttpUtils.urlEncode(key)
                 + "?fields=" + HttpUtils.urlEncode(ISSUE_FIELDS);
-        return formatIssue(getJson(url));
+        return toDetail(getJson(url));
     }
 
     public String createIssue(String projectKey, String issueType, String summary, String description) {
@@ -204,17 +212,24 @@ public class JiraClient {
         return String.join("\n", rows);
     }
 
-    private String formatIssue(Map<String, Object> data) {
+    private IssueDetail toDetail(Map<String, Object> data) {
         Map<String, Object> f = JsonUtils.getNestedMap(data, "fields");
-        String assignee = orDefault(JsonUtils.getNestedField(f, "assignee", "displayName"), "Unassigned");
-        String desc = adfToText(f.get("description")).strip();
+        return new IssueDetail(
+                orDefault(JsonUtils.getNestedField(data, "key"), "?"),
+                orDefault(JsonUtils.getNestedField(f, "summary"), ""),
+                orDefault(JsonUtils.getNestedField(f, "status", "name"), "?"),
+                orDefault(JsonUtils.getNestedField(f, "assignee", "displayName"), "Unassigned"),
+                adfToText(f.get("description")).strip());
+    }
+
+    /** The multi-line rendering of an issue, as {@code jira-fmt.py} prints it. */
+    public static String formatIssue(IssueDetail i) {
         return String.join("\n",
-                orDefault(JsonUtils.getNestedField(data, "key"), "?") + "  "
-                        + orDefault(JsonUtils.getNestedField(f, "summary"), ""),
-                "Status:   " + orDefault(JsonUtils.getNestedField(f, "status", "name"), "?"),
-                "Assignee: " + assignee,
+                i.key() + "  " + i.summary(),
+                "Status:   " + i.status(),
+                "Assignee: " + i.assignee(),
                 "",
-                desc.isEmpty() ? "(no description)" : desc);
+                i.description().isEmpty() ? "(no description)" : i.description());
     }
 
     /** Recursively pull plain text out of an Atlassian Document Format tree. */

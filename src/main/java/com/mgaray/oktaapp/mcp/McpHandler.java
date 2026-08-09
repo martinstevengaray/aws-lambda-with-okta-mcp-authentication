@@ -8,6 +8,7 @@ import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.jira.JiraException;
 import com.mgaray.oktaapp.mcp.tools.ITool;
 import com.mgaray.oktaapp.mcp.tools.implementations.ListMyIssuesTool;
+import com.mgaray.oktaapp.mcp.tools.implementations.GetIssueTool;
 import com.mgaray.oktaapp.mcp.tools.implementations.SearchIssuesTool;
 import com.okta.jwt.Jwt;
 
@@ -31,11 +32,13 @@ public class McpHandler {
     private final JiraClient jira;
     private final ITool listMyIssuesTool;
     private final ITool searchIssuesTool;
+    private final ITool getIssueTool;
 
     public McpHandler(JiraClient jira) {
         this.jira = jira;
         this.listMyIssuesTool = new ListMyIssuesTool(jira);
         this.searchIssuesTool = new SearchIssuesTool(jira);
+        this.getIssueTool = new GetIssueTool(jira);
     }
 
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
@@ -86,11 +89,11 @@ public class McpHandler {
             switch (name == null ? "" : name) {
                 case "list_my_issues": return listMyIssuesTool.callTool(args);
                 case "search_issues": return searchIssuesTool.callTool(args);
+                case "get_issue": return getIssueTool.callTool(args);
             }
             String text = switch (name == null ? "" : name) {
                 //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
                 //case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
-                case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
                 case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
                         requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
                 case "add_comment" -> jira.addComment(requiredArg(args, "key"), requiredArg(args, "body"));
@@ -181,10 +184,7 @@ public class McpHandler {
     private static final List<ToolDefinition> tools = List.of(
             ListMyIssuesTool.toolDefinition,
             SearchIssuesTool.toolDefinition,
-            new ToolDefinition("get_issue",
-                    "Get a single Jira issue by key, including its description.",
-                    JsonSchema.object(Map.of("key", JsonSchema.string("Issue key, e.g. SDD-1.")),
-                            List.of("key"))),
+            GetIssueTool.toolDefinition,
             new ToolDefinition("create_issue",
                     "Create a new Jira issue.",
                     JsonSchema.object(Map.of(

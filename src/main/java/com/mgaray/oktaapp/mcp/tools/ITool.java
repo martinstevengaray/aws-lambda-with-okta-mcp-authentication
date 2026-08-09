@@ -29,9 +29,22 @@ public interface ITool {
         return s;
     }
 
+    /**
+     * For row-shaped results: the text block is the serialized structured content,
+     * so the two cannot drift apart.
+     */
     static Map<String, Object> structuredContentResult(Object structured) {
+        return structuredContentResult(JsonUtils.toJson(structured), structured);
+    }
+
+    /**
+     * For prose-shaped results: the text block is a purpose-built rendering rather
+     * than serialized JSON, because escaping a multi-line description into one
+     * quoted string reads worse than the text it came from.
+     */
+    static Map<String, Object> structuredContentResult(String text, Object structured) {
         return Map.of(
-                "content", List.of(textContentResult(JsonUtils.toJson(structured))),
+                "content", List.of(textContentResult(text)),
                 "structuredContent", structured);
     }
 
