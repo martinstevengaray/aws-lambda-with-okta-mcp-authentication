@@ -115,10 +115,19 @@ public class JiraClient {
                 str(created.getOrDefault("id", "?")));
     }
 
+    /** The issue commented on, plus the id Jira assigned to the new comment. */
+    public record AddedComment(String issueKey, String commentId) {}
+
     public String addComment(String key, String body) {
-        postJson(baseUrl + "/issue/" + HttpUtils.urlEncode(key) + "/comment",
+        return "Added comment to " + addCommentDetail(key, body).issueKey();
+    }
+
+    /** As {@link #addComment}, but structured. */
+    public AddedComment addCommentDetail(String key, String body) {
+        Map<String, Object> added = postJson(
+                baseUrl + "/issue/" + HttpUtils.urlEncode(key) + "/comment",
                 Map.of("body", textToAdf(body)));
-        return "Added comment to " + key;
+        return new AddedComment(key, str(added.getOrDefault("id", "?")));
     }
 
     /** Resolve a target status/transition name to its id, then apply it. */

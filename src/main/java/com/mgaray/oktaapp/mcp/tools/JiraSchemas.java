@@ -47,6 +47,18 @@ public final class JiraSchemas {
      * What a create returns: just the identifiers Jira assigns. The caller already
      * knows the summary and description it sent, so echoing them back is noise.
      */
+    /**
+     * What adding a comment returns: which issue was commented on, and the id of the
+     * new comment. The comment body is not echoed back — the caller just sent it.
+     */
+    public static JsonSchema addJiraCommentOutputSchema() {
+        return JsonSchema.object(
+                Map.of(
+                        "issueKey", JsonSchema.string("Key of the issue that was commented on, e.g. SDD-1."),
+                        "commentId", JsonSchema.string("Id Jira assigned to the new comment, as a string.")),
+                List.of("issueKey", "commentId"));
+    }
+
     public static JsonSchema createJiraIssueOutputSchema() {
         return JsonSchema.object(
                 Map.of(
