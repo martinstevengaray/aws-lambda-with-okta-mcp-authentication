@@ -1,6 +1,6 @@
 package com.mgaray.oktaapp.mcp.tools;
 
-import com.mgaray.oktaapp.mcp.Models;
+import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
@@ -15,7 +15,7 @@ public class ListMyIssuesTool implements ITool {
      * required because {@link JiraClient#myIssueSummaries} substitutes a placeholder
      * ("?", "-", "") rather than omitting a field Jira didn't return.
      */
-    private static final JsonSchema ISSUE = Models.JsonSchema.object(
+    private static final JsonSchema ISSUE = JsonSchema.object(
             "A single Jira issue.",
             Map.of(
                     "key", JsonSchema.string("Issue key, e.g. SDD-1."),
@@ -28,11 +28,11 @@ public class ListMyIssuesTool implements ITool {
     "list_my_issues",
 "List Jira issues assigned to you, most recently updated first.",
             JsonSchema.object(Map.of(
-                "maxResults", Models.JsonSchema.integer("Maximum number of issues to return (default 50).")),
+                "maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
             List.of()),
             // An outputSchema root must be an object, so the array is wrapped in "issues".
             JsonSchema.object(Map.of(
-                "issues", Models.JsonSchema.array("The issues assigned to you, most recently updated first.", ISSUE)),
+                "issues", JsonSchema.array("The issues assigned to you, most recently updated first.", ISSUE)),
             List.of("issues")));
 
     private final JiraClient jiraClient;
