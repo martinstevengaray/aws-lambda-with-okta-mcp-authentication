@@ -130,11 +130,26 @@ public class JiraClient {
         return new AddedComment(key, str(added.getOrDefault("id", "?")));
     }
 
+    /**
+     * The outcome of a transition. {@code status} is the status the issue actually
+     * landed in, which is not always what the caller asked for: the request may name
+     * either a transition ("Start Progress") or a target status ("In Progress").
+     */
+    public record TransitionedIssue(String key, String status, String transition) {}
+
     /** Resolve a target status/transition name to its id, then apply it. */
     public String transitionIssue(String key, String status) {
+        TransitionedIssue t = transitionIssueDetail(key, status);
+        return "Transitioned " + t.key() + " -> " + t.status();
+    }
+
+    /** As {@link #transitionIssue}, but structured. */
+    public TransitionedIssue transitionIssueDetail(String key, String status) {
         Map<String, Object> data = getJson(baseUrl + "/issue/" + HttpUtils.urlEncode(key) + "/transitions");
         List<Map<String, Object>> transitions = asList(data.get("transitions"));
         String matchId = null;
+        String matchName = null;
+        String matchTo = null;
         List<String> available = new ArrayList<>();
         for (Map<String, Object> t : transitions) {
             String name = str(t.get("name"));
@@ -142,6 +157,8 @@ public class JiraClient {
             available.add(name);
             if (status.equalsIgnoreCase(name) || status.equalsIgnoreCase(toName)) {
                 matchId = str(t.get("id"));
+                matchName = name;
+                matchTo = toName;
                 break;
             }
         }
@@ -151,7 +168,8 @@ public class JiraClient {
         }
         postJson(baseUrl + "/issue/" + HttpUtils.urlEncode(key) + "/transitions",
                 Map.of("transition", Map.of("id", matchId)));
-        return "Transitioned " + key + " -> " + status;
+        // Fall back to what was asked for if Jira's transition list omits the target.
+        return new TransitionedIssue(key, orDefault(matchTo, status), orDefault(matchName, status));
     }
 
     // ---- HTTP plumbing ----

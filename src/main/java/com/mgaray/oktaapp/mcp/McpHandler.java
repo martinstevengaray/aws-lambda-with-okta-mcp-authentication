@@ -12,6 +12,7 @@ import com.mgaray.oktaapp.mcp.tools.implementations.AddCommentTool;
 import com.mgaray.oktaapp.mcp.tools.implementations.CreateIssueTool;
 import com.mgaray.oktaapp.mcp.tools.implementations.GetIssueTool;
 import com.mgaray.oktaapp.mcp.tools.implementations.SearchIssuesTool;
+import com.mgaray.oktaapp.mcp.tools.implementations.TransitionIssueTool;
 import com.okta.jwt.Jwt;
 
 import java.nio.charset.StandardCharsets;
@@ -37,6 +38,7 @@ public class McpHandler {
     private final ITool getIssueTool;
     private final ITool createIssueTool;
     private final ITool addCommentTool;
+    private final ITool transitionIssueTool;
 
     public McpHandler(JiraClient jira) {
         this.jira = jira;
@@ -45,6 +47,7 @@ public class McpHandler {
         this.getIssueTool = new GetIssueTool(jira);
         this.createIssueTool = new CreateIssueTool(jira);
         this.addCommentTool = new AddCommentTool(jira);
+        this.transitionIssueTool = new TransitionIssueTool(jira);
     }
 
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
@@ -92,27 +95,29 @@ public class McpHandler {
         try {
             // Tools with their own class return a full result (text + structuredContent);
             // the rest still return a bare string that is wrapped below.
-            switch (name == null ? "" : name) {
-                case "list_my_issues": return listMyIssuesTool.callTool(args);
-                case "search_issues": return searchIssuesTool.callTool(args);
-                case "get_issue": return getIssueTool.callTool(args);
-                case "create_issue": return createIssueTool.callTool(args);
-                case "add_comment": return addCommentTool.callTool(args);
-            }
-            String text = switch (name == null ? "" : name) {
+            return switch (name == null ? "" : name) {
+                case "list_my_issues" -> listMyIssuesTool.callTool(args);
+                case "search_issues" -> searchIssuesTool.callTool(args);
+                case "get_issue" -> getIssueTool.callTool(args);
+                case "create_issue" -> createIssueTool.callTool(args);
+                case "add_comment" -> addCommentTool.callTool(args);
+                case "transition_issue" -> transitionIssueTool.callTool(args);
+                default -> toolError("Unknown tool: " + name);
+            };
+//            String text = switch (name == null ? "" : name) {
                 //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
                 //case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
                 //case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
                 //case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
                 //        requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
                 //case "add_comment" -> jira.addComment(requiredArg(args, "key"), requiredArg(args, "body"));
-                case "transition_issue" -> jira.transitionIssue(requiredArg(args, "key"), requiredArg(args, "status"));
-                default -> null;
-            };
-            if (text == null) {
-                return toolError("Unknown tool: " + name);
-            }
-            return Map.of("content", List.of(textContent(text)));
+//                case "transition_issue" -> jira.transitionIssue(requiredArg(args, "key"), requiredArg(args, "status"));
+//                default -> null;
+//            };
+//            if (text == null) {
+//                return toolError("Unknown tool: " + name);
+//            }
+//            return Map.of("content", List.of(textContent(text)));
         } catch (JiraException | IllegalArgumentException e) {
             // Tool-level failures are reported as an error result, not a protocol error.
             return toolError(e.getMessage());
@@ -196,12 +201,7 @@ public class McpHandler {
             GetIssueTool.toolDefinition,
             CreateIssueTool.toolDefinition,
             AddCommentTool.toolDefinition,
-            new ToolDefinition("transition_issue",
-                    "Move a Jira issue to a new status (e.g. In Progress, Done).",
-                    JsonSchema.object(Map.of(
-                                    "key", JsonSchema.string("Issue key, e.g. SDD-1."),
-                                    "status", JsonSchema.string("Target status or transition name, e.g. \"In Progress\".")),
-                            List.of("key", "status"))));
+            TransitionIssueTool.toolDefinition);
 
 
 

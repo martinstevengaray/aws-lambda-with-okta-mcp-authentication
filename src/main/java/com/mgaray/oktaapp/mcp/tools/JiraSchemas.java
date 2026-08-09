@@ -59,6 +59,19 @@ public final class JiraSchemas {
                 List.of("issueKey", "commentId"));
     }
 
+    /**
+     * What a transition returns. {@code status} is the resulting status rather than an
+     * echo of the request, since the caller may have named a transition instead.
+     */
+    public static JsonSchema transitionJiraIssueOutputSchema() {
+        return JsonSchema.object(
+                Map.of(
+                        "key", JsonSchema.string("Key of the issue that was moved, e.g. SDD-1."),
+                        "status", JsonSchema.string("Status the issue is in after the move, e.g. In Progress."),
+                        "transition", JsonSchema.string("Name of the transition that was applied, e.g. Start Progress.")),
+                List.of("key", "status", "transition"));
+    }
+
     public static JsonSchema createJiraIssueOutputSchema() {
         return JsonSchema.object(
                 Map.of(
