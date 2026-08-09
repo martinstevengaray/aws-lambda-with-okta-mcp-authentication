@@ -15,12 +15,7 @@ public final class JiraSchemas {
 
     private JiraSchemas() {}
 
-    /**
-     * One issue in {@code structuredContent.issues}. Every field is required
-     * because the client substitutes a placeholder ("?", "-", "") rather than
-     * omitting a field Jira didn't return.
-     */
-    static final JsonSchema ISSUE = JsonSchema.object(
+    private static final JsonSchema JIRA_ISSUE_SCHEMA = JsonSchema.object(
             "A single Jira issue.",
             Map.of(
                     "key", JsonSchema.string("Issue key, e.g. SDD-1."),
@@ -29,13 +24,9 @@ public final class JiraSchemas {
                     "summary", JsonSchema.string("Short summary / title of the issue.")),
             List.of("key", "status", "priority", "summary"));
 
-    /**
-     * The outputSchema for a tool returning issue rows. An outputSchema root must
-     * be an object, so the array is wrapped in an "issues" property.
-     */
-    public static JsonSchema createIssuesOutputSchema(String description) {
+    public static JsonSchema createJiraIssuesOutputSchema(String description) {
         return JsonSchema.object(
-                Map.of("issues", JsonSchema.array(description, ISSUE)),
+                Map.of("issues", JsonSchema.array(description, JIRA_ISSUE_SCHEMA)),
                 List.of("issues"));
     }
 }
