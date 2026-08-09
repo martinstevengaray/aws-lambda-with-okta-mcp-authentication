@@ -13,25 +13,33 @@ public interface ITool {
 
     // ---- Result helpers ----
 
-    /**
-     * A tool result carrying both halves the spec expects: the structured object,
-     * and the same object serialized into the required text block for clients that
-     * ignore {@code structuredContent}. Serializing rather than hand-formatting keeps
-     * the two from drifting apart. Only for tools that declare an outputSchema.
-     */
-    static Map<String, Object> structuredResult(Object structured) {
+    static int getInt(Map<String, Object> args, String key, int fallback) {
+        try {
+            return (int)Double.parseDouble(args.get(key).toString()); //parseDouble so 5.0 is acceptable
+        } catch(Exception ignored) {
+            return fallback;
+        }
+    }
+
+    static String getString(Map<String, Object> args, String key) {
+        Object value = args.get(key);
+        if (!(value instanceof String s) || s.isBlank()) {
+            throw new IllegalArgumentException("Missing required argument: " + key);
+        }
+        return s;
+    }
+
+    static Map<String, Object> structuredContentResult(Object structured) {
         return Map.of(
-                "content", List.of(textContent(JsonUtils.toJson(structured))),
+                "content", List.of(textContentResult(JsonUtils.toJson(structured))),
                 "structuredContent", structured);
     }
 
-    static Map<String, Object> textContent(String text) {
+    static Map<String, Object> textContentResult(String text) {
         return Map.of("type", "text", "text", text);
     }
 
-    // ---- Argument helpers ----
-
-    /** Reads an optional integer argument, tolerating JSON floats ({@code 5.0}) and strings. */
+    //todo delete, left for comparison to getInt() only:-------------------------------------
     static int intArg(Map<String, Object> args, String key, int fallback) {
         Object value = args.get(key);
         if (value instanceof Number n) {
@@ -48,12 +56,4 @@ public interface ITool {
         return fallback;
     }
 
-    /** Reads a required string argument, or reports a tool-level error. */
-    static String requiredArg(Map<String, Object> args, String key) {
-        Object value = args.get(key);
-        if (!(value instanceof String s) || s.isBlank()) {
-            throw new IllegalArgumentException("Missing required argument: " + key);
-        }
-        return s;
-    }
 }

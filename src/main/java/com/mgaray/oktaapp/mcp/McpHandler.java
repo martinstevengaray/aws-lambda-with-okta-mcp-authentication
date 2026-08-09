@@ -7,8 +7,8 @@ import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.jira.JiraException;
 import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.ListMyIssuesTool;
-import com.mgaray.oktaapp.mcp.tools.SearchIssuesTool;
+import com.mgaray.oktaapp.mcp.tools.implementations.ListMyIssuesTool;
+import com.mgaray.oktaapp.mcp.tools.implementations.SearchIssuesTool;
 import com.okta.jwt.Jwt;
 
 import java.nio.charset.StandardCharsets;

@@ -11,7 +11,7 @@ import java.util.Map;
  * {@link com.mgaray.oktaapp.mcp.jira.JiraClient.IssueSummary} shape, so the
  * schema describing it lives in one place rather than once per tool.
  */
-final class JiraSchemas {
+public final class JiraSchemas {
 
     private JiraSchemas() {}
 
@@ -33,7 +33,7 @@ final class JiraSchemas {
      * The outputSchema for a tool returning issue rows. An outputSchema root must
      * be an object, so the array is wrapped in an "issues" property.
      */
-    static JsonSchema issuesOutput(String description) {
+    public static JsonSchema createIssuesOutputSchema(String description) {
         return JsonSchema.object(
                 Map.of("issues", JsonSchema.array(description, ISSUE)),
                 List.of("issues"));
