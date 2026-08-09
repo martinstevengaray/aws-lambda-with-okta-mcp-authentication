@@ -5,12 +5,6 @@ import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Schema fragments shared by the tools that return Jira issue rows. Both
- * {@code list_my_issues} and {@code search_issues} return the same
- * {@link com.mgaray.oktaapp.mcp.jira.JiraClient.IssueSummary} shape, so the
- * schema describing it lives in one place rather than once per tool.
- */
 public final class JiraSchemas {
 
     private JiraSchemas() {}
