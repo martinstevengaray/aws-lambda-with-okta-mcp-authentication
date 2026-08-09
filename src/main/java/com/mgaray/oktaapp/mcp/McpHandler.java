@@ -78,8 +78,8 @@ public class McpHandler {
         String name = JsonUtils.getNestedField(request, "params", "name");
         Map<String, Object> args = JsonUtils.getNestedMap(request, "params", "arguments");
         try {
-            if ("list_my_issues".equals(name)) {
-                return listMyIssuesTool.callTool(args);
+            switch(name) {
+                case "list_my_issues" : return listMyIssuesTool.callTool(args);
             }
             String text = switch (name == null ? "" : name) {
                 //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
