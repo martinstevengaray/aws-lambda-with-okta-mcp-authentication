@@ -29,6 +29,11 @@ public interface ITool {
         return s;
     }
 
+    /** For arguments absent from the schema's required list; null when not supplied. */
+    static String getOptionalString(Map<String, Object> args, String key) {
+        return args.get(key) instanceof String s ? s : null;
+    }
+
     /**
      * For row-shaped results: the text block is the serialized structured content,
      * so the two cannot drift apart.

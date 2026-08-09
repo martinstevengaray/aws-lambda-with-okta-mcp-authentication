@@ -8,6 +8,7 @@ import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.jira.JiraException;
 import com.mgaray.oktaapp.mcp.tools.ITool;
 import com.mgaray.oktaapp.mcp.tools.implementations.ListMyIssuesTool;
+import com.mgaray.oktaapp.mcp.tools.implementations.CreateIssueTool;
 import com.mgaray.oktaapp.mcp.tools.implementations.GetIssueTool;
 import com.mgaray.oktaapp.mcp.tools.implementations.SearchIssuesTool;
 import com.okta.jwt.Jwt;
@@ -33,12 +34,14 @@ public class McpHandler {
     private final ITool listMyIssuesTool;
     private final ITool searchIssuesTool;
     private final ITool getIssueTool;
+    private final ITool createIssueTool;
 
     public McpHandler(JiraClient jira) {
         this.jira = jira;
         this.listMyIssuesTool = new ListMyIssuesTool(jira);
         this.searchIssuesTool = new SearchIssuesTool(jira);
         this.getIssueTool = new GetIssueTool(jira);
+        this.createIssueTool = new CreateIssueTool(jira);
     }
 
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
@@ -90,13 +93,14 @@ public class McpHandler {
                 case "list_my_issues": return listMyIssuesTool.callTool(args);
                 case "search_issues": return searchIssuesTool.callTool(args);
                 case "get_issue": return getIssueTool.callTool(args);
+                case "create_issue": return createIssueTool.callTool(args);
             }
             String text = switch (name == null ? "" : name) {
                 //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
                 //case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
                 //case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
-                case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
-                        requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
+                //case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
+                //        requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
                 case "add_comment" -> jira.addComment(requiredArg(args, "key"), requiredArg(args, "body"));
                 case "transition_issue" -> jira.transitionIssue(requiredArg(args, "key"), requiredArg(args, "status"));
                 default -> null;
@@ -186,14 +190,7 @@ public class McpHandler {
             ListMyIssuesTool.toolDefinition,
             SearchIssuesTool.toolDefinition,
             GetIssueTool.toolDefinition,
-            new ToolDefinition("create_issue",
-                    "Create a new Jira issue.",
-                    JsonSchema.object(Map.of(
-                                    "projectKey", JsonSchema.string("Project key the issue belongs to, e.g. SDD."),
-                                    "issueType", JsonSchema.string("Issue type name, e.g. Task, Bug, Story."),
-                                    "summary", JsonSchema.string("Short summary / title of the issue."),
-                                    "description", JsonSchema.string("Optional longer description (plain text).")),
-                            List.of("projectKey", "issueType", "summary"))),
+            CreateIssueTool.toolDefinition,
             new ToolDefinition("add_comment",
                     "Add a comment to a Jira issue.",
                     JsonSchema.object(Map.of(

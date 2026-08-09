@@ -42,4 +42,16 @@ public final class JiraSchemas {
                                         + " Empty string when the issue has no description.")),
                 List.of("key", "status", "priority", "summary", "assignee", "description"));
     }
+
+    /**
+     * What a create returns: just the identifiers Jira assigns. The caller already
+     * knows the summary and description it sent, so echoing them back is noise.
+     */
+    public static JsonSchema createJiraIssueOutputSchema() {
+        return JsonSchema.object(
+                Map.of(
+                        "key", JsonSchema.string("Key of the newly created issue, e.g. SDD-1."),
+                        "id", JsonSchema.string("Numeric id of the newly created issue, as a string.")),
+                List.of("key", "id"));
+    }
 }

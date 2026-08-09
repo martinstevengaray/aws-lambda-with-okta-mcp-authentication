@@ -93,7 +93,15 @@ public class JiraClient {
         return toDetail(getJson(url));
     }
 
+    /** The identifiers Jira hands back when an issue is created. */
+    public record CreatedIssue(String key, String id) {}
+
     public String createIssue(String projectKey, String issueType, String summary, String description) {
+        return "Created issue " + createIssueDetail(projectKey, issueType, summary, description).key();
+    }
+
+    /** As {@link #createIssue}, but structured. */
+    public CreatedIssue createIssueDetail(String projectKey, String issueType, String summary, String description) {
         var fields = new java.util.LinkedHashMap<String, Object>();
         fields.put("project", Map.of("key", projectKey));
         fields.put("issuetype", Map.of("name", issueType));
@@ -102,7 +110,9 @@ public class JiraClient {
             fields.put("description", textToAdf(description));
         }
         Map<String, Object> created = postJson(baseUrl + "/issue", Map.of("fields", fields));
-        return "Created issue " + created.getOrDefault("key", "?");
+        return new CreatedIssue(
+                str(created.getOrDefault("key", "?")),
+                str(created.getOrDefault("id", "?")));
     }
 
     public String addComment(String key, String body) {
