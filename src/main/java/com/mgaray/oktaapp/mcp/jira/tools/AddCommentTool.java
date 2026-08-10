@@ -1,11 +1,12 @@
 package com.mgaray.oktaapp.mcp.jira.tools;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.ITool;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.AddCommentRequest;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.AddCommentResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +24,6 @@ public class AddCommentTool implements ITool {
                     "Key of the issue that was commented on, e.g. SDD-1.",
                    "Id Jira assigned to the new comment, as a string."))
     );
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public record AddCommentRequest(String key,
-                                     String body) {}
-
-    public record AddCommentResponse(String issueKey,
-                                     String commentId) {}
 
     private final JiraClient jiraClient;
 

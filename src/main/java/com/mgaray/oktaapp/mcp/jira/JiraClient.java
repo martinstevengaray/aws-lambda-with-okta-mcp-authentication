@@ -6,8 +6,8 @@ import com.mgaray.oktaapp.mcp.jira.JiraModels.IssueSummary;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.IssueDetail;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.CreatedIssue;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.TransitionedIssue;
-import com.mgaray.oktaapp.mcp.jira.tools.AddCommentTool.AddCommentRequest;
-import com.mgaray.oktaapp.mcp.jira.tools.AddCommentTool.AddCommentResponse;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.AddCommentRequest;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.AddCommentResponse;
 
 import java.net.URI;
 import java.net.http.HttpClient;

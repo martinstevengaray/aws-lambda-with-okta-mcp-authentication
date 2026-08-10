@@ -1,5 +1,7 @@
 package com.mgaray.oktaapp.mcp.jira;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 public class JiraModels {
 
     public record IssueSummary(String key,
@@ -21,5 +23,12 @@ public class JiraModels {
                                     String status,  //status that issue landed in, not necessarily what was requested
                                     String transition) {}
 
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record AddCommentRequest(String key,
+                                    String body) {}
+
+    public record AddCommentResponse(String issueKey,
+                                     String commentId) {}
 
 }
