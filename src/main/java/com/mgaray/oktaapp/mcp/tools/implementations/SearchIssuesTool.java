@@ -13,7 +13,7 @@ public class SearchIssuesTool implements ITool {
 
     private static final int DEFAULT_MAX_RESULTS = 50;
 
-    public static final ToolDefinition toolDefinition = new ToolDefinition(
+    private static final ToolDefinition toolDefinition = new ToolDefinition(
             "search_issues",
             "Search Jira issues with a JQL query.",
             JsonSchema.object(

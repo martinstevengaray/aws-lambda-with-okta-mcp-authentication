@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class CreateIssueTool implements ITool {
 
-    public static final ToolDefinition toolDefinition = new ToolDefinition(
+    private static final ToolDefinition toolDefinition = new ToolDefinition(
             "create_issue",
             "Create a new Jira issue.",
             JsonSchema.object(

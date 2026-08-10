@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class TransitionIssueTool implements ITool {
 
-    public static final ToolDefinition toolDefinition = new ToolDefinition(
+    private static final ToolDefinition toolDefinition = new ToolDefinition(
             "transition_issue",
             "Move a Jira issue to a new status (e.g. In Progress, Done).",
             JsonSchema.object(

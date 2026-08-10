@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class GetIssueTool implements ITool {
 
-    public static final ToolDefinition toolDefinition = new ToolDefinition(
+    private static final ToolDefinition toolDefinition = new ToolDefinition(
             "get_issue",
             "Get a single Jira issue by key, including its description.",
             JsonSchema.object(

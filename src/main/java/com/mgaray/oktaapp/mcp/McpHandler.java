@@ -47,6 +47,9 @@ public class McpHandler {
     private void addTool(ITool... itools) {
         for (ITool iTool : itools) {
             String name = iTool.toolDefinition().name();
+            if (toolMap.containsKey(name)) {
+                throw new IllegalArgumentException("duplicate tool name: " + name);
+            }
             toolMap.put(name, iTool);
             tools.add(iTool.toolDefinition());
         }

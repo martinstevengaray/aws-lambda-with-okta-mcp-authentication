@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class AddCommentTool implements ITool {
 
-    public static final ToolDefinition toolDefinition = new ToolDefinition(
+    private static final ToolDefinition toolDefinition = new ToolDefinition(
             "add_comment",
             "Add a comment to a Jira issue.",
             JsonSchema.object(

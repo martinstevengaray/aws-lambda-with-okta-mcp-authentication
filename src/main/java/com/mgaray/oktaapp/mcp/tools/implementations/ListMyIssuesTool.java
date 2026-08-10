@@ -13,7 +13,7 @@ public class ListMyIssuesTool implements ITool {
 
     private static final int DEFAULT_MAX_RESULTS = 50;
 
-    public static final ToolDefinition toolDefinition = new ToolDefinition(
+    private static final ToolDefinition toolDefinition = new ToolDefinition(
             "list_my_issues",
             "List Jira issues assigned to you, most recently updated first.",
             JsonSchema.object(
