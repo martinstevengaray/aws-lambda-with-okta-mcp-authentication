@@ -7,6 +7,7 @@ import com.mgaray.oktaapp.mcp.jira.JiraModels.IssueDetail;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.CreatedIssue;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.TransitionedIssue;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.AddedComment;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -84,7 +85,7 @@ public class JiraClient {
     }
 
     /** As {@link #getIssue}, but structured. */
-    public JiraModels.IssueDetail issueDetail(String key) {
+    public IssueDetail issueDetail(String key) {
         String url = baseUrl + "/issue/" + HttpUtils.urlEncode(key)
                 + "?fields=" + HttpUtils.urlEncode(ISSUE_FIELDS);
         return toDetail(getJson(url));
