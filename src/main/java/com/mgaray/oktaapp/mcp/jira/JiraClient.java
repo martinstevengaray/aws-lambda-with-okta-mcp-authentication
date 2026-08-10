@@ -51,9 +51,6 @@ public class JiraClient {
 
     // ---- Tool operations (return formatted text ready for an MCP text result) ----
 
-    /** One row of a search result, for tools that expose structured output. */
-    //public record IssueSummary(String key, String status, String priority, String summary) {}
-
     /** Issues assigned to the token's user, most recently updated first. */
     public String listMyIssues(int maxResults) {
         return searchIssues(MY_ISSUES_JQL, maxResults);
@@ -81,10 +78,6 @@ public class JiraClient {
                 + "&maxResults=" + maxResults;
     }
 
-    /** A single issue, with its description already flattened from ADF to plain text. */
-//    public record IssueDetail(String key, String summary, String status, String priority,
-//                              String assignee, String description) {}
-
     /** A single issue by key, with its description flattened from ADF to text. */
     public String getIssue(String key) {
         return formatIssue(issueDetail(key));
@@ -96,9 +89,6 @@ public class JiraClient {
                 + "?fields=" + HttpUtils.urlEncode(ISSUE_FIELDS);
         return toDetail(getJson(url));
     }
-
-    /** The identifiers Jira hands back when an issue is created. */
-//    public record CreatedIssue(String key, String id) {}
 
     public String createIssue(String projectKey, String issueType, String summary, String description) {
         return "Created issue " + createIssueDetail(projectKey, issueType, summary, description).key();
@@ -119,9 +109,6 @@ public class JiraClient {
                 str(created.getOrDefault("id", "?")));
     }
 
-    /** The issue commented on, plus the id Jira assigned to the new comment. */
-//    public record AddedComment(String issueKey, String commentId) {}
-
     public String addComment(String key, String body) {
         return "Added comment to " + addCommentDetail(key, body).issueKey();
     }
@@ -133,13 +120,6 @@ public class JiraClient {
                 Map.of("body", textToAdf(body)));
         return new AddedComment(key, str(added.getOrDefault("id", "?")));
     }
-
-    /**
-     * The outcome of a transition. {@code status} is the status the issue actually
-     * landed in, which is not always what the caller asked for: the request may name
-     * either a transition ("Start Progress") or a target status ("In Progress").
-     */
-//    public record TransitionedIssue(String key, String status, String transition) {}
 
     /** Resolve a target status/transition name to its id, then apply it. */
     public String transitionIssue(String key, String status) {
