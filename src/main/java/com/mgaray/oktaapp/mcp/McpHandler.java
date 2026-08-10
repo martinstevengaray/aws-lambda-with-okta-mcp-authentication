@@ -108,19 +108,23 @@ public class McpHandler {
         }
     }
 
-    // ---- JSON-RPC envelope helpers ----
+    private static String readBody(Map<String, Object> event) {
+        String body = event.get("body") instanceof String s ? s : "";
+        if (Boolean.TRUE.equals(event.get("isBase64Encoded"))) {
+            body = new String(Base64.getDecoder().decode(body), StandardCharsets.UTF_8);
+        }
+        return body;
+    }
 
     private static Map<String, Object> toolError(String message) {
+        Map<String, Object> textContent = Map.of("type", "text", "text", "Error: " + message);
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("content", List.of(textContent("Error: " + message)));
+        result.put("content", List.of(textContent));
         result.put("isError", true);
         return result;
     }
 
-    private static Map<String, Object> textContent(String text) {
-        return Map.of("type", "text", "text", text);
-    }
-
+    // ---- JSON-RPC envelope helpers ----
     private static Map<String, Object> rpcResult(Object id, Object result) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("jsonrpc", "2.0");
@@ -138,14 +142,6 @@ public class McpHandler {
         body.put("id", id);
         body.put("error", error);
         return HttpUtils.responseJson(200, JsonUtils.toJson(body));
-    }
-
-    private static String readBody(Map<String, Object> event) {
-        String body = event.get("body") instanceof String s ? s : "";
-        if (Boolean.TRUE.equals(event.get("isBase64Encoded"))) {
-            body = new String(Base64.getDecoder().decode(body), StandardCharsets.UTF_8);
-        }
-        return body;
     }
 
 }
