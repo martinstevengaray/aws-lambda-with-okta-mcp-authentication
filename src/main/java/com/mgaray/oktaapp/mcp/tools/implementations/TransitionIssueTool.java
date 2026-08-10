@@ -17,12 +17,13 @@ public class TransitionIssueTool implements ITool {
                     Map.of(
                             "key", JsonSchema.string("Issue key, e.g. SDD-1."),
                             "status", JsonSchema.string("Target status or transition name, e.g. \"In Progress\".")),
-                    List.of("key", "status")),JsonSchema.object(
-            Map.of(
-                    "key", JsonSchema.string("Key of the issue that was moved, e.g. SDD-1."),
-                    "status", JsonSchema.string("Status the issue is in after the move, e.g. In Progress."),
-                    "transition", JsonSchema.string("Name of the transition that was applied, e.g. Start Progress.")),
-            List.of("key", "status", "transition"))
+                    List.of("key", "status")),
+            JsonSchema.object(
+                    Map.of(
+                            "key", JsonSchema.string("Key of the issue that was moved, e.g. SDD-1."),
+                            "status", JsonSchema.string("Status the issue is in after the move, e.g. In Progress."),
+                            "transition", JsonSchema.string("Name of the transition that was applied, e.g. Start Progress.")),
+                    List.of("key", "status", "transition"))
     );
 
     private final JiraClient jiraClient;
