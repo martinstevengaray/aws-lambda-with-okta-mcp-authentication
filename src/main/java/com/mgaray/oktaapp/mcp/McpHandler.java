@@ -13,9 +13,7 @@ import com.mgaray.oktaapp.mcp.jira.tools.SearchIssuesTool;
 import com.mgaray.oktaapp.mcp.jira.tools.TransitionIssueTool;
 import com.okta.jwt.Jwt;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +23,16 @@ import java.util.Map;
  * HTTP transport. Each Lambda invocation carries a single JSON-RPC request in
  * the body; we dispatch it and return a single JSON-RPC response. No SSE stream
  * and no session id are used (the tools are simple request/response calls).
- * Jira access is delegated to {@link JiraClient}.
  */
 public class McpHandler {
 
     private static final String DEFAULT_PROTOCOL_VERSION = "2025-06-18";
+
+    private static final int PARSE_ERROR_CODE = -32700;
+    private static final int INVALID_REQUEST_CODE = -32600;
+    private static final int METHOD_NOT_FOUND_CODE = -32601;
+    //private static final int INVALID_PARAMETER_CODE = -32602;
+    private static final int INTERNAL_ERROR_CODE = -32603;
 
     private final Map<String, ITool> toolMap = new LinkedHashMap<>();
     private final List<ToolDefinition> tools = new ArrayList<>();
@@ -57,31 +60,28 @@ public class McpHandler {
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
         Map<String, Object> request;
         try {
-            request = JsonUtils.parse(readBody(event));
+            request = HttpUtils.parseBase64EncodedBody(event);
         } catch (Exception e) {
-            return rpcError(null, -32700, "Parse error");
+            return rpcError(null, PARSE_ERROR_CODE, "Parse error");
         }
-
         Object id = request.get("id");
         String method = request.get("method") instanceof String s ? s : null;
         if (method == null) {
-            return rpcError(id, -32600, "Invalid Request: missing method");
+            return rpcError(id, INVALID_REQUEST_CODE, "Invalid Request: missing method");
         }
-        // Notifications (e.g. notifications/initialized) expect no JSON-RPC reply.
-        if (method.startsWith("notifications/")) {
+        if (method.startsWith("notifications/")) { // Notifications expect no JSON-RPC reply.
             return HttpUtils.responseJson(202, "");
         }
-
         try {
             return switch (method) {
                 case "initialize" -> rpcResult(id, initialize(request));
                 case "ping" -> rpcResult(id, Map.of());
                 case "tools/list" -> rpcResult(id, Map.of("tools", tools));
                 case "tools/call" -> rpcResult(id, callTool(request));
-                default -> rpcError(id, -32601, "Method not found: " + method);
+                default -> rpcError(id, METHOD_NOT_FOUND_CODE, "Method not found: " + method);
             };
         } catch (Exception e) {
-            return rpcError(id, -32603, "Internal error: " + e.getMessage());
+            return rpcError(id, INTERNAL_ERROR_CODE, "Internal error: " + e.getMessage());
         }
     }
 
@@ -99,29 +99,17 @@ public class McpHandler {
         try {
             ITool tool = toolMap.get(name);
             if (tool == null) {
-                return toolError("Unknown tool: " + name);
+                throw new IllegalArgumentException("Unknown tool: " + name);
             }
             return tool.callTool(args);
         } catch (JiraException | IllegalArgumentException e) {
-            // Tool-level failures are reported as an error result, not a protocol error.
-            return toolError(e.getMessage());
+            //respond with rpcResult with error content, not rpcError
+            Map<String, Object> textContent = Map.of("type", "text", "text", "Error: " + e.getMessage());
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("content", List.of(textContent));
+            result.put("isError", true);
+            return result;
         }
-    }
-
-    private static String readBody(Map<String, Object> event) {
-        String body = event.get("body") instanceof String s ? s : "";
-        if (Boolean.TRUE.equals(event.get("isBase64Encoded"))) {
-            body = new String(Base64.getDecoder().decode(body), StandardCharsets.UTF_8);
-        }
-        return body;
-    }
-
-    private static Map<String, Object> toolError(String message) {
-        Map<String, Object> textContent = Map.of("type", "text", "text", "Error: " + message);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("content", List.of(textContent));
-        result.put("isError", true);
-        return result;
     }
 
     // ---- JSON-RPC envelope helpers ----
