@@ -137,7 +137,7 @@ public class JiraClient {
         for (Map<String, Object> t : transitions) {
             String name = str(t.get("name"));
             String toName = JsonUtils.getNestedField(t, "to", "name");
-            available.add(name);
+            available.add(toName == null ? name : name + " -> " + toName);
             if (status.equalsIgnoreCase(name) || status.equalsIgnoreCase(toName)) {
                 matchId = str(t.get("id"));
                 matchName = name;
@@ -147,7 +147,8 @@ public class JiraClient {
         }
         if (matchId == null) {
             throw new JiraException(400, "No transition matching '" + status
-                    + "' on " + key + ". Available: " + String.join(", ", available));
+                    + "' on " + key + ". Available (transition -> resulting status): "
+                    + String.join(", ", available));
         }
         postJson(baseUrl + "/issue/" + HttpUtils.urlEncode(key) + "/transitions",
                 Map.of("transition", Map.of("id", matchId)));

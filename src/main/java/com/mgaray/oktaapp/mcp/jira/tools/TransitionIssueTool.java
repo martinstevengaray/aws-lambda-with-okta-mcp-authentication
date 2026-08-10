@@ -13,11 +13,13 @@ public class TransitionIssueTool implements ITool {
 
     private static final ToolDefinition toolDefinition = new ToolDefinition(
             "transition_issue",
-            "Move a Jira issue to a new status (e.g. In Progress, Done).",
+            "Move a Jira issue to a new status. Valid names depend on the project's workflow;"
+                    + " if none matches, the error lists the transitions available on that issue.",
             JsonSchema.object(
                     Map.of(
                             "key", JsonSchema.string("Issue key, e.g. SDD-1."),
-                            "status", JsonSchema.string("Target status or transition name, e.g. \"In Progress\".")),
+                            "status", JsonSchema.string("Target status or transition name. These are workflow-specific,"
+                                    + " so do not guess from other projects — on a mismatch the error lists the valid options.")),
                     List.of("key", "status")),
             JsonSchema.object(
                     Map.of(
