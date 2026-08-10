@@ -41,7 +41,6 @@ public class AddCommentTool implements ITool {
         JiraClient.AddedComment added = jiraClient.addCommentDetail(
                 ITool.getString(args, "key"),
                 ITool.getString(args, "body"));
-        // A mutation, so the text block confirms the action rather than restating the ids.
         return ITool.structuredContentResult("Added comment to " + added.issueKey(), added);
     }
 

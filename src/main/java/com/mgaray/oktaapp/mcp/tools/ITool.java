@@ -11,7 +11,8 @@ public interface ITool {
     ToolDefinition toolDefinition();
     Map<String, Object> callTool(Map<String, Object> args);
 
-    //helpers
+
+    //-----input format helpers-----------------------------------------------------------------------------------------
 
     static int getInt(Map<String, Object> args, String key, int fallback) {
         try {
@@ -29,24 +30,17 @@ public interface ITool {
         return s;
     }
 
-    /** For arguments absent from the schema's required list; null when not supplied. */
     static String getString(Map<String, Object> args, String key, String fallback) {
         return args.get(key) instanceof String s ? s : fallback;
     }
 
-    /**
-     * For row-shaped results: the text block is the serialized structured content,
-     * so the two cannot drift apart.
-     */
+
+    //-----output format helpers----------------------------------------------------------------------------------------
+
     static Map<String, Object> structuredContentResult(Object structured) {
         return structuredContentResult(JsonUtils.toJson(structured), structured);
     }
 
-    /**
-     * For prose-shaped results: the text block is a purpose-built rendering rather
-     * than serialized JSON, because escaping a multi-line description into one
-     * quoted string reads worse than the text it came from.
-     */
     static Map<String, Object> structuredContentResult(String text, Object structured) {
         return Map.of(
                 "content", List.of(textContentResult(text)),
@@ -58,22 +52,4 @@ public interface ITool {
     }
 
 }
-
-
-    //left for comparison to getInt() only:-------------------------------------
-//    static int intArg(Map<String, Object> args, String key, int fallback) {
-//        Object value = args.get(key);
-//        if (value instanceof Number n) {
-//            long v = n.longValue();
-//            return v < 1 ? fallback : (int) Math.min(v, Integer.MAX_VALUE);
-//        }
-//        if (value instanceof String s && !s.isBlank()) {
-//            try {
-//                return intArg(Map.of(key, Double.valueOf(s.trim())), key, fallback);
-//            } catch (NumberFormatException ignored) {
-//                // fall through to the default
-//            }
-//        }
-//        return fallback;
-//    }
 

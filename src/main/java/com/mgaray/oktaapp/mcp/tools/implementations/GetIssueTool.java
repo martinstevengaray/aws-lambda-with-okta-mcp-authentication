@@ -34,9 +34,6 @@ public class GetIssueTool implements ITool {
     public Map<String, Object> callTool(Map<String, Object> args) {
         String key = ITool.getString(args, "key");
         JiraClient.IssueDetail issue = jiraClient.issueDetail(key);
-        // Unlike the list tools, the text block keeps its multi-line rendering rather
-        // than serialized JSON: the description is prose, and escaping it into one
-        // quoted string reads worse for both a human and a model.
         return ITool.structuredContentResult(JiraClient.formatIssue(issue), issue);
     }
 

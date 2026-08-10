@@ -45,8 +45,6 @@ public class CreateIssueTool implements ITool {
                 ITool.getString(args, "issueType"),
                 ITool.getString(args, "summary"),
                 ITool.getString(args, "description", null));
-        // Unlike the read tools, the text block confirms what happened rather than
-        // restating the payload: {"key":"SDD-5"} alone doesn't say an issue was created.
         return ITool.structuredContentResult("Created issue " + created.key(), created);
     }
 

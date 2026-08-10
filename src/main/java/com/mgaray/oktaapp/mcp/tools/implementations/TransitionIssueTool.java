@@ -42,9 +42,7 @@ public class TransitionIssueTool implements ITool {
         JiraClient.TransitionedIssue moved = jiraClient.transitionIssueDetail(
                 ITool.getString(args, "key"),
                 ITool.getString(args, "status"));
-        // Report the status the issue actually landed in, not the caller's wording.
-        return ITool.structuredContentResult(
-                "Transitioned " + moved.key() + " -> " + moved.status(), moved);
+        return ITool.structuredContentResult("Transitioned " + moved.key() + " -> " + moved.status(), moved);
     }
 
 }
