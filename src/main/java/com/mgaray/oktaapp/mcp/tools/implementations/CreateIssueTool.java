@@ -4,7 +4,6 @@ import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.JiraSchemas;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,12 @@ public class CreateIssueTool implements ITool {
                             "summary", JsonSchema.string("Short summary / title of the issue."),
                             "description", JsonSchema.string("Optional longer description (plain text).")),
                     List.of("projectKey", "issueType", "summary")),
-            JiraSchemas.createJiraIssueOutputSchema());
+            JsonSchema.object(
+                    Map.of(
+                            "key", JsonSchema.string("Key of the newly created issue, e.g. SDD-1."),
+                            "id", JsonSchema.string("Numeric id of the newly created issue, as a string.")),
+                    List.of("key", "id"))
+    );
 
     private final JiraClient jiraClient;
 

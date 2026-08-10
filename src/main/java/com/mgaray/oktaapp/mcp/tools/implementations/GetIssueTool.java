@@ -4,7 +4,7 @@ import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.JiraSchemas;
+import com.mgaray.oktaapp.mcp.tools.JiraIssueSchemas;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class GetIssueTool implements ITool {
             JsonSchema.object(
                     Map.of("key", JsonSchema.string("Issue key, e.g. SDD-1.")),
                     List.of("key")),
-            JiraSchemas.getJiraIssueDetailOutputSchema());
+            JiraIssueSchemas.jiraIssueDetailSchema());
 
     private final JiraClient jiraClient;
 

@@ -4,7 +4,6 @@ import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.JiraSchemas;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,12 @@ public class AddCommentTool implements ITool {
                             "key", JsonSchema.string("Issue key, e.g. SDD-1."),
                             "body", JsonSchema.string("Comment text (plain text).")),
                     List.of("key", "body")),
-            JiraSchemas.addJiraCommentOutputSchema());
+            JsonSchema.object(
+                    Map.of(
+                            "issueKey", JsonSchema.string("Key of the issue that was commented on, e.g. SDD-1."),
+                            "commentId", JsonSchema.string("Id Jira assigned to the new comment, as a string.")),
+                    List.of("issueKey", "commentId"))
+    );
 
     private final JiraClient jiraClient;
 

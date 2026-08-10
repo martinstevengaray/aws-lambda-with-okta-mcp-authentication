@@ -4,7 +4,7 @@ import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.JiraSchemas;
+import com.mgaray.oktaapp.mcp.tools.JiraIssueSchemas;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ public class ListMyIssuesTool implements ITool {
             JsonSchema.object(
                     Map.of("maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
                     List.of()),
-            JiraSchemas.listAndSearchJiraIssuesOutputSchema("The issues assigned to you, most recently updated first."));
+            JiraIssueSchemas.jiraIssueSummaryListSchema("The issues assigned to you, most recently updated first."));
 
     private final JiraClient jiraClient;
 

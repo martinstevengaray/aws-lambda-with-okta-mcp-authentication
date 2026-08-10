@@ -4,7 +4,7 @@ import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
 import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.JiraSchemas;
+import com.mgaray.oktaapp.mcp.tools.JiraIssueSchemas;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class SearchIssuesTool implements ITool {
                             "jql", JsonSchema.string("A JQL query, e.g. \"project = SDD AND status = 'To Do'\"."),
                             "maxResults", JsonSchema.integer("Maximum number of issues to return (default 50).")),
                     List.of("jql")),
-            JiraSchemas.listAndSearchJiraIssuesOutputSchema("The issues matching the query."));
+            JiraIssueSchemas.jiraIssueSummaryListSchema("The issues matching the query."));
 
     private final JiraClient jiraClient;
 
