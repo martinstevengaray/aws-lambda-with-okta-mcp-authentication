@@ -1,6 +1,5 @@
 package com.mgaray.oktaapp.mcp;
 
-import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
@@ -16,6 +15,7 @@ import com.mgaray.oktaapp.mcp.tools.implementations.TransitionIssueTool;
 import com.okta.jwt.Jwt;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,22 +32,24 @@ public class McpHandler {
 
     private static final String DEFAULT_PROTOCOL_VERSION = "2025-06-18";
 
-    private final JiraClient jira;
-    private final ITool listMyIssuesTool;
-    private final ITool searchIssuesTool;
-    private final ITool getIssueTool;
-    private final ITool createIssueTool;
-    private final ITool addCommentTool;
-    private final ITool transitionIssueTool;
+    private final Map<String, ITool> toolMap = new LinkedHashMap<>();
+    private final List<ToolDefinition> tools = new ArrayList<>();
 
-    public McpHandler(JiraClient jira) {
-        this.jira = jira;
-        this.listMyIssuesTool = new ListMyIssuesTool(jira);
-        this.searchIssuesTool = new SearchIssuesTool(jira);
-        this.getIssueTool = new GetIssueTool(jira);
-        this.createIssueTool = new CreateIssueTool(jira);
-        this.addCommentTool = new AddCommentTool(jira);
-        this.transitionIssueTool = new TransitionIssueTool(jira);
+    public McpHandler(JiraClient jiraClient) {
+        addTool(new ListMyIssuesTool(jiraClient),
+                new SearchIssuesTool(jiraClient),
+                new GetIssueTool(jiraClient),
+                new CreateIssueTool(jiraClient),
+                new AddCommentTool(jiraClient),
+                new TransitionIssueTool(jiraClient));
+    }
+
+    private void addTool(ITool... itools) {
+        for (ITool iTool : itools) {
+            String name = iTool.toolDefinition().name();
+            toolMap.put(name, iTool);
+            tools.add(iTool.toolDefinition());
+        }
     }
 
     public Map<String, Object> handle(Map<String, Object> event, Jwt jwt) {
@@ -93,64 +95,15 @@ public class McpHandler {
         String name = JsonUtils.getNestedField(request, "params", "name");
         Map<String, Object> args = JsonUtils.getNestedMap(request, "params", "arguments");
         try {
-            // Tools with their own class return a full result (text + structuredContent);
-            // the rest still return a bare string that is wrapped below.
-            return switch (name == null ? "" : name) {
-                case "list_my_issues" -> listMyIssuesTool.callTool(args);
-                case "search_issues" -> searchIssuesTool.callTool(args);
-                case "get_issue" -> getIssueTool.callTool(args);
-                case "create_issue" -> createIssueTool.callTool(args);
-                case "add_comment" -> addCommentTool.callTool(args);
-                case "transition_issue" -> transitionIssueTool.callTool(args);
-                default -> toolError("Unknown tool: " + name);
-            };
-//            String text = switch (name == null ? "" : name) {
-                //case "list_my_issues" -> jira.listMyIssues(intArg(args, "maxResults", 50));
-                //case "search_issues" -> jira.searchIssues(requiredArg(args, "jql"), intArg(args, "maxResults", 50));
-                //case "get_issue" -> jira.getIssue(requiredArg(args, "key"));
-                //case "create_issue" -> jira.createIssue(requiredArg(args, "projectKey"),
-                //        requiredArg(args, "issueType"), requiredArg(args, "summary"), optionalArg(args, "description"));
-                //case "add_comment" -> jira.addComment(requiredArg(args, "key"), requiredArg(args, "body"));
-//                case "transition_issue" -> jira.transitionIssue(requiredArg(args, "key"), requiredArg(args, "status"));
-//                default -> null;
-//            };
-//            if (text == null) {
-//                return toolError("Unknown tool: " + name);
-//            }
-//            return Map.of("content", List.of(textContent(text)));
+            ITool tool = toolMap.get(name);
+            if (tool == null) {
+                return toolError("Unknown tool: " + name);
+            }
+            return tool.callTool(args);
         } catch (JiraException | IllegalArgumentException e) {
             // Tool-level failures are reported as an error result, not a protocol error.
             return toolError(e.getMessage());
         }
-    }
-
-    // ---- Argument helpers ----
-
-    private static String requiredArg(Map<String, Object> args, String key) {
-        Object value = args.get(key);
-        if (!(value instanceof String s) || s.isBlank()) {
-            throw new IllegalArgumentException("Missing required argument: " + key);
-        }
-        return s;
-    }
-
-    private static String optionalArg(Map<String, Object> args, String key) {
-        return args.get(key) instanceof String s ? s : null;
-    }
-
-    private static int intArg(Map<String, Object> args, String key, int fallback) {
-        Object value = args.get(key);
-        if (value instanceof Number n) {
-            return n.intValue();
-        }
-        if (value instanceof String s && !s.isBlank()) {
-            try {
-                return Integer.parseInt(s.trim());
-            } catch (NumberFormatException ignored) {
-                // fall through to default
-            }
-        }
-        return fallback;
     }
 
     // ---- JSON-RPC envelope helpers ----
@@ -192,19 +145,5 @@ public class McpHandler {
         }
         return body;
     }
-
-    // ---- Tool-descriptor builders ----
-
-    private static final List<ToolDefinition> tools = List.of(
-            ListMyIssuesTool.toolDefinition,
-            SearchIssuesTool.toolDefinition,
-            GetIssueTool.toolDefinition,
-            CreateIssueTool.toolDefinition,
-            AddCommentTool.toolDefinition,
-            TransitionIssueTool.toolDefinition);
-
-
-
-
 
 }
