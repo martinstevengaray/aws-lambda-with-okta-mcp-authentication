@@ -7,8 +7,6 @@ import java.util.Map;
 
 public final class JiraIssueSchemas {
 
-    private JiraIssueSchemas() {}
-
     public static JsonSchema jiraIssueSummaryListSchema(String description) {
         return JsonSchema.object(
                 Map.of("issues", JsonSchema.array(description, JsonSchema.object(
