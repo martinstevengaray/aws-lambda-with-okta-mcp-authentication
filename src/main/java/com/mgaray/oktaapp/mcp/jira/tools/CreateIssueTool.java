@@ -1,9 +1,10 @@
-package com.mgaray.oktaapp.mcp.tools.implementations;
+package com.mgaray.oktaapp.mcp.jira.tools;
 
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
-import com.mgaray.oktaapp.mcp.tools.ITool;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.CreatedIssue;
+import com.mgaray.oktaapp.mcp.ITool;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class CreateIssueTool implements ITool {
 
     @Override
     public Map<String, Object> callTool(Map<String, Object> args) {
-        JiraClient.CreatedIssue created = jiraClient.createIssueDetail(
+        CreatedIssue created = jiraClient.createIssueDetail(
                 ITool.getString(args, "projectKey"),
                 ITool.getString(args, "issueType"),
                 ITool.getString(args, "summary"),

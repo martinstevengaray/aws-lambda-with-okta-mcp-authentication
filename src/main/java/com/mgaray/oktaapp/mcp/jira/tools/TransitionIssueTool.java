@@ -1,9 +1,10 @@
-package com.mgaray.oktaapp.mcp.tools.implementations;
+package com.mgaray.oktaapp.mcp.jira.tools;
 
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
-import com.mgaray.oktaapp.mcp.tools.ITool;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.TransitionedIssue;
+import com.mgaray.oktaapp.mcp.ITool;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class TransitionIssueTool implements ITool {
 
     @Override
     public Map<String, Object> callTool(Map<String, Object> args) {
-        JiraClient.TransitionedIssue moved = jiraClient.transitionIssueDetail(
+        TransitionedIssue moved = jiraClient.transitionIssueDetail(
                 ITool.getString(args, "key"),
                 ITool.getString(args, "status"));
         return ITool.structuredContentResult("Transitioned " + moved.key() + " -> " + moved.status(), moved);

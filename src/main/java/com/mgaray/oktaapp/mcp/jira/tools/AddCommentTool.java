@@ -1,9 +1,10 @@
-package com.mgaray.oktaapp.mcp.tools.implementations;
+package com.mgaray.oktaapp.mcp.jira.tools;
 
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
-import com.mgaray.oktaapp.mcp.tools.ITool;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.AddedComment;
+import com.mgaray.oktaapp.mcp.ITool;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class AddCommentTool implements ITool {
 
     @Override
     public Map<String, Object> callTool(Map<String, Object> args) {
-        JiraClient.AddedComment added = jiraClient.addCommentDetail(
+        AddedComment added = jiraClient.addCommentDetail(
                 ITool.getString(args, "key"),
                 ITool.getString(args, "body"));
         return ITool.structuredContentResult("Added comment to " + added.issueKey(), added);

@@ -1,4 +1,4 @@
-package com.mgaray.oktaapp.mcp.tools;
+package com.mgaray.oktaapp.mcp.jira;
 
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 

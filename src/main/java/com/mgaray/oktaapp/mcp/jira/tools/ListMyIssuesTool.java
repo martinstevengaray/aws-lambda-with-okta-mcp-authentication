@@ -1,10 +1,11 @@
-package com.mgaray.oktaapp.mcp.tools.implementations;
+package com.mgaray.oktaapp.mcp.jira.tools;
 
 import com.mgaray.oktaapp.mcp.Models.JsonSchema;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
 import com.mgaray.oktaapp.mcp.jira.JiraClient;
-import com.mgaray.oktaapp.mcp.tools.ITool;
-import com.mgaray.oktaapp.mcp.tools.JiraIssueSchemas;
+import com.mgaray.oktaapp.mcp.ITool;
+import com.mgaray.oktaapp.mcp.jira.JiraIssueSchemas;
+import com.mgaray.oktaapp.mcp.jira.JiraModels.IssueSummary;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class ListMyIssuesTool implements ITool {
     @Override
     public Map<String, Object> callTool(Map<String, Object> args) {
         int maxResults = ITool.getInt(args, "maxResults", DEFAULT_MAX_RESULTS);
-        List<JiraClient.IssueSummary> issues = jiraClient.myIssueSummaries(maxResults);
+        List<IssueSummary> issues = jiraClient.myIssueSummaries(maxResults);
         return ITool.structuredContentResult(Map.of("issues", issues));
     }
 

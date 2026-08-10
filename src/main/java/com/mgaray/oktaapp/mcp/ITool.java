@@ -1,4 +1,4 @@
-package com.mgaray.oktaapp.mcp.tools;
+package com.mgaray.oktaapp.mcp;
 
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.mcp.Models.ToolDefinition;
