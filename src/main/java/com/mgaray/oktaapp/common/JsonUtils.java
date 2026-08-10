@@ -26,6 +26,14 @@ public class JsonUtils {
         }
     }
 
+    public static Map<String, Object> convertToMap(Object object) {
+        return objectMapper.convertValue(object, new TypeReference<Map<String, Object>>() {});
+    }
+
+    public static <T> T convertToPojo(Map<String, Object> map, Class<T> clazz) {
+        return objectMapper.convertValue(map, clazz);
+    }
+
     public static Map<String, Object> getNestedMap(Map<String, Object> objectMap, String... path) {
         Map<String, Object> nestedMap = getNestedField(objectMap, path);
         return (nestedMap != null) ? nestedMap : Map.of();
@@ -43,9 +51,23 @@ public class JsonUtils {
                 objectMap = (Map<String, Object>) objectMap.get(path[i]);
             }
             return (T) objectMap.get(path[path.length - 1]);
+        } catch (ClassCastException | NullPointerException e) { //recall, type cast to (T) would not be caught here
+            return null; //key not available on objectMap
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T>  T getNestedField(Map<String, Object> objectMap, Class<T> type, String... path) {
+        try {
+            for (int i = 0; i < path.length - 1; i++) {
+                objectMap = (Map<String, Object>) objectMap.get(path[i]);
+            }
+            return type.cast(objectMap.get(path[path.length - 1]));
         } catch (ClassCastException | NullPointerException e) {
             return null; //key not available on objectMap
         }
     }
+
+
 
 }
