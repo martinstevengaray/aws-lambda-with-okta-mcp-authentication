@@ -6,7 +6,8 @@ import com.mgaray.oktaapp.mcp.jira.JiraModels.IssueSummary;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.IssueDetail;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.CreatedIssue;
 import com.mgaray.oktaapp.mcp.jira.JiraModels.TransitionedIssue;
-import com.mgaray.oktaapp.mcp.jira.JiraModels.AddedComment;
+import com.mgaray.oktaapp.mcp.jira.tools.AddCommentTool.AddCommentRequest;
+import com.mgaray.oktaapp.mcp.jira.tools.AddCommentTool.AddCommentResponse;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -110,16 +111,13 @@ public class JiraClient {
                 str(created.getOrDefault("id", "?")));
     }
 
-    public String addComment(String key, String body) {
-        return "Added comment to " + addCommentDetail(key, body).issueKey();
-    }
-
-    /** As {@link #addComment}, but structured. */
-    public AddedComment addCommentDetail(String key, String body) {
+    public AddCommentResponse addCommentDetail(AddCommentRequest request) {
+        String key = request.key();
+        String body = request.body();
         Map<String, Object> added = postJson(
                 baseUrl + "/issue/" + HttpUtils.urlEncode(key) + "/comment",
                 Map.of("body", textToAdf(body)));
-        return new AddedComment(key, str(added.getOrDefault("id", "?")));
+        return new AddCommentResponse(key, str(added.getOrDefault("id", "?")));
     }
 
     /** Resolve a target status/transition name to its id, then apply it. */

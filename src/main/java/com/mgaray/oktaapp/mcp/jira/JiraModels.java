@@ -21,7 +21,5 @@ public class JiraModels {
                                     String status,  //status that issue landed in, not necessarily what was requested
                                     String transition) {}
 
-    public record AddedComment(String issueKey,
-                               String commentId) {}
 
 }

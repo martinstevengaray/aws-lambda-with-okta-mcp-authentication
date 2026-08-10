@@ -1,7 +1,10 @@
 package com.mgaray.oktaapp.mcp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.mgaray.oktaapp.common.JsonUtils;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +61,21 @@ public class Models {
         public static JsonSchema object(Map<String, JsonSchema> properties,
                                         List<String> required) {
             return new JsonSchema(objectType, null, null, properties, required);
+        }
+        public static JsonSchema fromObjectDescription(Object object) {
+            Map<String, Object> properties = JsonUtils.convertToMap(object);
+            Map<String, JsonSchema> propertySchemaMap = new LinkedHashMap<>();
+            List<String> requiredProperties = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : properties.entrySet()) {
+                String propertyName = entry.getKey();
+                Object description = entry.getValue();
+                if (!(description instanceof String descriptionString)) {
+                    throw new IllegalArgumentException("JsonSchema fromObjectDescription requires object with only string fields");
+                }
+                propertySchemaMap.put(propertyName, JsonSchema.string(descriptionString));
+                requiredProperties.add(propertyName);
+            }
+            return JsonSchema.object(propertySchemaMap, requiredProperties);
         }
     }
 

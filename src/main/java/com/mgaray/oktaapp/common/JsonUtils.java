@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Iterator;
 import java.util.Map;
 
 public class JsonUtils {
@@ -25,6 +24,14 @@ public class JsonUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Map<String, Object> convertToMap(Object object) {
+        return objectMapper.convertValue(object, new TypeReference<Map<String, Object>>() {});
+    }
+
+    public static <T> T convertToPojo(Map<String, Object> map, Class<T> clazz) {
+        return objectMapper.convertValue(map, clazz);
     }
 
     public static Map<String, Object> getNestedMap(Map<String, Object> objectMap, String... path) {
