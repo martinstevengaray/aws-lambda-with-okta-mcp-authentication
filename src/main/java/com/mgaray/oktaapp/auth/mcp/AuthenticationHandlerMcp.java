@@ -1,5 +1,6 @@
-package com.mgaray.oktaapp.auth;
+package com.mgaray.oktaapp.auth.mcp;
 
+import com.mgaray.oktaapp.auth.OktaConfig;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import java.util.LinkedHashMap;
@@ -11,7 +12,7 @@ import static com.mgaray.oktaapp.auth.OktaDelegate.REGISTER_PATH;
 import static com.mgaray.oktaapp.auth.OktaDelegate.AUTHORIZE_PATH;
 import static com.mgaray.oktaapp.auth.OktaDelegate.TOKEN_PATH;
 
-class AuthenticationHandlerMcp {
+public class AuthenticationHandlerMcp {
 
     private final String oktaIssuer;
     private final List<String> oktaScopes;
@@ -19,13 +20,13 @@ class AuthenticationHandlerMcp {
     // MCP clients so they never attempt real (anonymous) registration against Okta.
     private final String oktaMcpClientId;
 
-    AuthenticationHandlerMcp(OktaConfig config) {
+    public AuthenticationHandlerMcp(OktaConfig config) {
         this.oktaIssuer = config.issuer();
         this.oktaScopes = List.of(config.scopes().trim().split("\\s+"));
         this.oktaMcpClientId = config.mcpClientId();
     }
 
-    Map<String, Object> authenticationRedirectMcp(Map<String, Object> event) { //to support mcp clients
+    public Map<String, Object> authenticationRedirectMcp(Map<String, Object> event) { //to support mcp clients
         String domainName = JsonUtils.getNestedField(event, "requestContext", "domainName");
         String wwwAuthenticate = "Bearer resource_metadata=\"https://" + domainName
                 + WELL_KNOWN_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX + "\"";
@@ -40,7 +41,7 @@ class AuthenticationHandlerMcp {
     // server guards the /mcp resource. The 401 from /mcp points here. With the shim on
     // we advertise *ourselves* as the AS so clients discover our /register; otherwise
     // we point straight at Okta.
-    Map<String, Object> handleOauthProtectedResource(Map<String, Object> event) {
+    public Map<String, Object> handleOauthProtectedResource(Map<String, Object> event) {
         String domainName = JsonUtils.getNestedField(event, "requestContext", "domainName");
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("resource", "https://" + domainName + "/mcp");
@@ -52,7 +53,7 @@ class AuthenticationHandlerMcp {
         return HttpUtils.responseJson(200, JsonUtils.toJson(metadata));
     }
 
-    Map<String, Object> handleOauthAuthorizationServer(Map<String, Object> event) {
+    public Map<String, Object> handleOauthAuthorizationServer(Map<String, Object> event) {
         String domainName = JsonUtils.getNestedField(event, "requestContext", "domainName");
         Map<String, String> jsonHeaders = Map.of("content-type", "application/json");
         Map<String, Object> metadata = new LinkedHashMap<>();
@@ -82,7 +83,7 @@ class AuthenticationHandlerMcp {
     // client's own metadata so its local validation is satisfied. NOTE: that Native app
     // must already have each client's redirect_uri registered in Okta — the shim can't
     // add them (that was the real proxy's job).
-    Map<String, Object> handleRegister(Map<String, Object> event) {
+    public Map<String, Object> handleRegister(Map<String, Object> event) {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("client_id", oktaMcpClientId);
         response.put("token_endpoint_auth_method", "none");

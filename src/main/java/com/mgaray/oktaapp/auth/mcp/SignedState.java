@@ -1,4 +1,4 @@
-package com.mgaray.oktaapp.auth;
+package com.mgaray.oktaapp.auth.mcp;
 
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
