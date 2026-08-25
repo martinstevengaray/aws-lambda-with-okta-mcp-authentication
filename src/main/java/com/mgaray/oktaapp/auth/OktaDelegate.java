@@ -1,5 +1,8 @@
 package com.mgaray.oktaapp.auth;
 
+import com.mgaray.oktaapp.auth.mcp.AuthenticationHandlerMcp;
+import com.mgaray.oktaapp.auth.mcp.McpOAuthProxy;
+import com.mgaray.oktaapp.auth.web.AuthenticationHandlerWeb;
 import com.mgaray.oktaapp.common.Logger;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
@@ -13,17 +16,17 @@ import java.util.Map;
 
 public class OktaDelegate {
 
-    static final String OKTA_TOKEN_COOKIE = "okta_token";
-    static final String REGISTER_PATH = "/register";
-    static final String CALLBACK_PATH = "/callback";
+    public static final String OKTA_TOKEN_COOKIE = "okta_token";
+    public static final String REGISTER_PATH = "/register";
+    public static final String CALLBACK_PATH = "/callback";
     // Public so an expired or already-revoked session still logs out instead of bouncing to Okta.
     static final String LOGOUT_PATH = "/logout";
     // MCP OAuth proxy: this Lambda fronts Okta's authorize/token so it can honor
     // each MCP client's own loopback redirect_uri without registering it in Okta.
-    static final String AUTHORIZE_PATH = "/authorize";
-    static final String TOKEN_PATH = "/token";
-    static final String MCP_OAUTH_CALLBACK_PATH = "/oauth/callback";
-    static final String WELL_KNOWN_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX = "/.well-known/oauth-protected-resource";
+    public static final String AUTHORIZE_PATH = "/authorize";
+    public static final String TOKEN_PATH = "/token";
+    public static final String MCP_OAUTH_CALLBACK_PATH = "/oauth/callback";
+    public static final String WELL_KNOWN_OAUTH_PROTECTED_RESOURCE_PATH_PREFIX = "/.well-known/oauth-protected-resource";
     private static final String WELL_KNOWN_OAUTH_AUTHORIZATION_SERVER_PATH_PREFIX = "/.well-known/oauth-authorization-server";
     private static final String WELL_KNOWN_OAUTH_OPENID_CONFIGURATION_PATH_PREFIX = "/.well-known/openid-configuration";
 

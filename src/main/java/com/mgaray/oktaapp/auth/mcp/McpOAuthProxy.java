@@ -1,5 +1,6 @@
-package com.mgaray.oktaapp.auth;
+package com.mgaray.oktaapp.auth.mcp;
 
+import com.mgaray.oktaapp.auth.OktaConfig;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
 import com.mgaray.oktaapp.common.Logger;
@@ -43,7 +44,7 @@ import static com.mgaray.oktaapp.auth.OktaDelegate.MCP_OAUTH_CALLBACK_PATH;
  * client redirect_uri — together they close the open-redirect / code-exfiltration
  * hole inherent to a stitching proxy.
  */
-class McpOAuthProxy {
+public class McpOAuthProxy {
 
     private final String oktaIssuer;
     private final SignedState signedState;
@@ -51,14 +52,14 @@ class McpOAuthProxy {
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
-    McpOAuthProxy(OktaConfig config) {
+    public McpOAuthProxy(OktaConfig config) {
         this.oktaIssuer = config.issuer();
         this.signedState = new SignedState(config.symmetricSigningKey());
     }
 
     // ---- /authorize : redirect the client to Okta under our own redirect_uri ----
 
-    Map<String, Object> handleAuthorize(Map<String, Object> event) {
+    public Map<String, Object> handleAuthorize(Map<String, Object> event) {
         Map<String, String> params = parseUrlEncoded(rawQueryString(event));
         String clientRedirectUri = params.get("redirect_uri");
         String clientState = params.get("state");
@@ -77,7 +78,7 @@ class McpOAuthProxy {
 
     // ---- /oauth/callback : hand Okta's code back to the client's loopback URI ----
 
-    Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
+    public Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
         String state = queryParam(event, "state");
         SignedState.ClientReturn target;
         try {
@@ -113,7 +114,7 @@ class McpOAuthProxy {
 
     // ---- /token : forward to Okta, swapping the client's redirect_uri for ours ----
 
-    Map<String, Object> handleToken(Map<String, Object> event, Logger logger) {
+    public Map<String, Object> handleToken(Map<String, Object> event, Logger logger) {
         Map<String, String> form = parseUrlEncoded(readBody(event));
         // The code was bound to our callback at /authorize, so the exchange must
         // present that same redirect_uri — not the client's loopback one.

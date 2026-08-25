@@ -1,5 +1,6 @@
-package com.mgaray.oktaapp.auth;
+package com.mgaray.oktaapp.auth.web;
 
+import com.mgaray.oktaapp.auth.OktaConfig;
 import com.mgaray.oktaapp.common.Logger;
 import com.mgaray.oktaapp.common.HttpUtils;
 import com.mgaray.oktaapp.common.JsonUtils;
@@ -21,7 +22,7 @@ import java.util.Map;
 import static com.mgaray.oktaapp.auth.OktaDelegate.CALLBACK_PATH;
 import static com.mgaray.oktaapp.auth.OktaDelegate.OKTA_TOKEN_COOKIE;
 
-class AuthenticationHandlerWeb {
+public class AuthenticationHandlerWeb {
 
     private static final String OAUTH_STATE_COOKIE = "oauth_state";
 
@@ -34,7 +35,7 @@ class AuthenticationHandlerWeb {
     private final HttpClient httpClient;
     private final SecureRandom secureRandom;
 
-    AuthenticationHandlerWeb(OktaConfig config, AccessTokenVerifier verifier) {
+    public AuthenticationHandlerWeb(OktaConfig config, AccessTokenVerifier verifier) {
         this.oktaIssuer = config.issuer();
         this.oktaWebClientId = config.webClientId();
         this.oktaWebClientSecret = config.webClientSecret();
@@ -46,7 +47,7 @@ class AuthenticationHandlerWeb {
         this.secureRandom = new SecureRandom();
     }
 
-    Map<String, Object> authenticationRedirectWeb(Map<String, Object> event) {
+    public Map<String, Object> authenticationRedirectWeb(Map<String, Object> event) {
         String path = JsonUtils.getNestedField(event, "requestContext", "http", "path");
         byte[] randomTokenBytes = new byte[24];
         secureRandom.nextBytes(randomTokenBytes);
@@ -74,7 +75,7 @@ class AuthenticationHandlerWeb {
     }
 
     // Exchanges the authorization code for an access token, stores it in a session cookie, then redirect back to self.
-    Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
+    public Map<String, Object> handleCallback(Map<String, Object> event, Logger logger) {
         final String error = JsonUtils.getNestedField(event, "queryStringParameters", "error");
         if (error != null) {
             String errorDescription = JsonUtils.getNestedField(event, "queryStringParameters", "error_description");
@@ -138,7 +139,7 @@ class AuthenticationHandlerWeb {
     // being replayed here anyway — only the cookie's absence ends the session. The Okta session is
     // deliberately left intact, so other Okta apps are unaffected. Answers with a page rather than a
     // redirect to "/", which would bounce back through /v1/authorize and silently sign the user in again.
-    Map<String, Object> handleLogout() {
+    public Map<String, Object> handleLogout() {
         // Says nothing about the Okta session: it may or may not still be live (the user may well have
         // signed out of Okta first), and this app has no way to tell.
         String body = "<!DOCTYPE html><html><body><h1>Signed out</h1>"
